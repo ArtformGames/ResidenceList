@@ -14,7 +14,7 @@ README LANGUAGES [ [**English**](README.md) | [中文](README_CN.md)  ]
 
 # **ResidenceList**
 
-> You have been **"Passed by Vote"** !
+> Great **"Residence"** all **listed** !
 
 List existing residence in server in a gui, and allow players to manage, teleport, and comment.
 
@@ -41,7 +41,7 @@ The main command is `/ResidenceList` or `/rl`.
 
 ## Configurations
 
-### Plugin Configuration ([`config.yml`]() .
+### Plugin Configuration ([`config.yml`]())
 
 Will be generated on the first boot up.
 
