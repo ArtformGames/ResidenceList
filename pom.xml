@@ -12,7 +12,7 @@
 
         <project.package>${project.groupId}.plugin.residencelist</project.package>
 
-        <deps.easyplugin.version>1.5.6</deps.easyplugin.version>
+        <deps.easyplugin.version>1.5.7</deps.easyplugin.version>
         <deps.mineconfig.version>2.8.0</deps.mineconfig.version>
 
         <deps.minedown.version>1.7.1-SNAPSHOT</deps.minedown.version>
