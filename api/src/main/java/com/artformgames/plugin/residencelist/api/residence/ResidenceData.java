@@ -131,6 +131,35 @@ public class ResidenceData {
         this.conf.set(author.toString(), null);
     }
 
+    public List<UUID> getBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(List<UUID> blocked) {
+        this.blocked.clear();
+        this.blocked.addAll(blocked);
+
+        this.conf.set("blocked", blocked);
+    }
+
+    public void addBlocked(UUID uuid) {
+        this.blocked.add(uuid);
+        this.conf.set("blocked", this.blocked);
+    }
+
+    public void removeBlocked(UUID uuid) {
+        this.blocked.remove(uuid);
+        this.conf.set("blocked", this.blocked);
+    }
+
+    public boolean isBlocked(UUID uuid) {
+        return this.blocked.contains(uuid);
+    }
+
+    public boolean isBlocked(Player player) {
+        return isBlocked(player.getUniqueId());
+    }
+
     public String getName() {
         return getResidence().getName();
     }
@@ -148,7 +177,7 @@ public class ResidenceData {
     }
 
     public boolean canTeleport(Player player) {
-        return !this.blocked.contains(player.getUniqueId())
+        return !isBlocked(player.getUniqueId())
                 && checkPermission(player, Flags.tp, true)
                 && checkPermission(player, Flags.move, true);
     }

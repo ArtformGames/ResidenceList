@@ -113,6 +113,12 @@ public class ResidenceManagerImpl implements ResidenceManager {
                                              @NotNull Consumer<ResidenceData> dataConsumer) {
         ResidenceData data = getData(name);
         dataConsumer.accept(data);
+        try {
+            data.save();
+        } catch (Exception e) {
+            Main.severe("Error occurred when saving residence data for '" + data.getName() + "' !");
+            e.printStackTrace();
+        }
         return data;
     }
 
