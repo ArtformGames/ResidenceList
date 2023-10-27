@@ -148,7 +148,7 @@ public class ResidenceData {
     }
 
     public boolean canTeleport(Player player) {
-        return checkPermission(player, Flags.tp, true)
+        return this.blocked.cocheckPermission(player, Flags.tp, true)
                 && checkPermission(player, Flags.move, true);
     }
 
