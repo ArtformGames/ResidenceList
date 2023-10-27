@@ -109,11 +109,6 @@
     </repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>com.artformgames</groupId>
-            <artifactId>residencelist-api</artifactId>
-            <version>1.0.0</version>
-        </dependency>
 
         <dependency>
             <groupId>org.spigotmc</groupId>
