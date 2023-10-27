@@ -1,5 +1,6 @@
 package com.artformgames.plugin.residencelist.api.residence;
 
+import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Location;
@@ -12,7 +13,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class ResidenceData {
 
@@ -142,6 +146,16 @@ public class ResidenceData {
     public @Nullable Location getTeleportLocation(Player player) {
         return getResidence().getTeleportLocation(player, false);
     }
+
+    public boolean canTeleport(Player player) {
+        return checkPermission(player, Flags.tp, true)
+                && checkPermission(player, Flags.move, true);
+    }
+
+    public boolean checkPermission(Player player, Flags flags, boolean defaults) {
+        return getResidence().getPermissions().playerHas(player, flags, defaults);
+    }
+
 
     public void renameTo(@NotNull File newFile) throws Exception {
         if (this.file.exists()) this.file.delete(); // Delete old file.
