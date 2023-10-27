@@ -29,8 +29,23 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.cryptomorin</groupId>
+            <artifactId>XSeries</artifactId>
+            <version>9.6.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>cc.carm.lib</groupId>
             <artifactId>easyplugin-utils</artifactId>
+            <version>${deps.easyplugin.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>cc.carm.lib</groupId>
+            <artifactId>easyplugin-user</artifactId>
             <version>${deps.easyplugin.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
