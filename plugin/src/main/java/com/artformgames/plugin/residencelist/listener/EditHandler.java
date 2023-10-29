@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+/**
+ * This class is used to handle the edit process based on chat messages.
+ */
 public class EditHandler implements Listener {
 
     protected static final Map<UUID, BiConsumer<Player, String>> callbackMap = new HashMap<>();

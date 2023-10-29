@@ -110,9 +110,11 @@ public class ResidenceManagerImpl implements ResidenceManager {
     }
 
     @Override
-    public @NotNull ResidenceData updateData(@NotNull String name,
-                                             @NotNull Consumer<ResidenceData> dataConsumer) {
+    public boolean updateData(@NotNull String name,
+                              @NotNull Consumer<ResidenceData> dataConsumer) {
         ResidenceData data = getData(name);
+        if (data == null) return false;
+        
         dataConsumer.accept(data);
         try {
             data.save();
@@ -120,7 +122,7 @@ public class ResidenceManagerImpl implements ResidenceManager {
             Main.severe("Error occurred when saving residence data for '" + data.getName() + "' !");
             e.printStackTrace();
         }
-        return data;
+        return true;
     }
 
     public void saveAll() {

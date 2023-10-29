@@ -24,6 +24,11 @@ public class UserListStorage extends UserData<UUID> implements UserListData {
     }
 
     @Override
+    public boolean isPinned(@NotNull String residence) {
+        return this.pined.stream().anyMatch(residence::equalsIgnoreCase);
+    }
+
+    @Override
     public void setPin(@NotNull String residence, int index) {
         this.pined.remove(residence);
         if (index < 0) return;

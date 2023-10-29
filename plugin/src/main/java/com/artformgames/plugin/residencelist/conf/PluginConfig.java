@@ -3,7 +3,7 @@ package com.artformgames.plugin.residencelist.conf;
 import cc.carm.lib.configuration.core.ConfigurationRoot;
 import cc.carm.lib.configuration.core.annotation.HeaderComment;
 import cc.carm.lib.configuration.core.value.type.ConfiguredValue;
-import com.cryptomorin.xseries.XMaterial;
+import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import org.bukkit.Material;
 
 public class PluginConfig extends ConfigurationRoot {
@@ -29,11 +29,44 @@ public class PluginConfig extends ConfigurationRoot {
 
     public static final class INFORMATION extends ConfigurationRoot {
 
-        public static final ConfiguredValue<Material> DEFAULT_ICON = ConfiguredValue.builderOf(Material.class).fromString()
-                .parseValue((v, d) -> XMaterial.matchXMaterial(v).map(XMaterial::parseMaterial).orElse(null))
-                .serializeValue(v -> XMaterial.matchXMaterial(v).name())
-                .defaults(Material.GRASS_BLOCK).build();
+        public static final ConfiguredItem ICON = ConfiguredItem.create()
+                .defaultType(Material.GRASS_BLOCK)
+                .defaultName("&7# &f%(name)")
+                .defaultLore(
+                        "{  &f&o}#description#{1,1}",
+                        "&7Owner: &f%(owner)",
+                        "&7Size: &f%(size) &7block(s)",
+                        "&7Members: &f%(members)",
+                        "#click-lore#{1}"
+                ).params("name", "owner", "members", "create_time", "size")
+                .build();
 
+    }
+
+    public static final class GUI extends ConfigurationRoot {
+
+
+        public static final class PAGE_ITEMS extends ConfigurationRoot {
+
+            public static final ConfiguredItem PREVIOUS_PAGE = ConfiguredItem.create()
+                    .defaults(Material.ARROW, "&fPrevious page")
+                    .defaultLore(
+                            " ",
+                            "&f  Left click to view the previous page.",
+                            "&f  Right click to view the first page.",
+                            " ")
+                    .build();
+
+            public static final ConfiguredItem NEXT_PAGE = ConfiguredItem.create()
+                    .defaults(Material.ARROW, "&fNext page")
+                    .defaultLore(
+                            " ",
+                            "&f  Left click to view the next page.",
+                            "&f  Right click to view the last page.",
+                            " "
+                    ).build();
+
+        }
 
     }
 
