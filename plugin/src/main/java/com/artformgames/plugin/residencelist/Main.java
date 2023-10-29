@@ -5,11 +5,14 @@ import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.mineconfiguration.bukkit.MineConfiguration;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
+import com.artformgames.plugin.residencelist.hooker.PluginExpansion;
+import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.listener.ResidenceListener;
 import com.artformgames.plugin.residencelist.manager.ResidenceManagerImpl;
 import com.artformgames.plugin.residencelist.manager.UserStorageManager;
 import com.artformgames.plugin.residencelist.utils.GHUpdateChecker;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,10 +53,18 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
         log("Register listeners...");
         GUI.initialize(this);
+        registerListener(new EditHandler());
         registerListener(new ResidenceListener());
 
         log("Register commands...");
 
+
+        log("Initializing Placeholders...");
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new PluginExpansion(this, getName()).register();
+        } else {
+            log("PlaceholderAPI is not found, skipped.");
+        }
 
         if (PluginConfig.METRICS.getNotNull()) {
             log("Initializing bStats...");

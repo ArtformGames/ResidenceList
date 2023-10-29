@@ -7,6 +7,7 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
@@ -94,12 +95,12 @@ public class ResidenceManagerImpl implements ResidenceManager {
     }
 
     @Override
-    public @NotNull ResidenceData getData(@NotNull String name) {
+    public @Nullable ResidenceData getData(@NotNull String name) {
+        ClaimedResidence residence = Residence.getInstance().getResidenceManager().getByName(name);
+        if (residence == null) return null;
+
         ResidenceData existed = this.residences.get(name);
         if (existed != null) return existed;
-
-        ClaimedResidence residence = Residence.getInstance().getResidenceManager().getByName(name);
-        if (residence == null) throw new IllegalArgumentException("Residence not found: " + name);
 
         File dataFile = new File(this.storageFolder, residence.getName() + ".yaml");
         ResidenceData data = new ResidenceData(dataFile, residence);

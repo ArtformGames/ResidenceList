@@ -12,7 +12,7 @@ public class ResidenceListener implements Listener {
     @EventHandler
     public void onRename(ResidenceRenameEvent event) {
         ClaimedResidence residence = event.getResidence();
-        if (!residence.isMainResidence()) return; // Only main residence can be storaged
+        if (!residence.isMainResidence()) return; // Only main residence can be stored.
 
         ResidenceManagerImpl manager = Main.getInstance().getResidenceManager();
         manager.renameResidence(event.getOldResidenceName(), event.getNewResidenceName());

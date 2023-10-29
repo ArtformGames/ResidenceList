@@ -26,7 +26,7 @@ public class ResidenceData {
     protected final @NotNull ClaimedResidence residence;
 
     protected @Nullable Material icon;
-    protected @Nullable String displayName;
+    protected @Nullable String aliasName;
     protected @NotNull List<String> description;
 
     protected boolean publicDisplayed;
@@ -41,7 +41,7 @@ public class ResidenceData {
         this.icon = Optional.ofNullable(conf.getString("icon"))
                 .flatMap(XMaterial::matchXMaterial)
                 .map(XMaterial::parseMaterial).orElse(null);
-        this.displayName = conf.getString("name", residence.getName());
+        this.aliasName = conf.getString("alias", residence.getName());
         this.description = conf.getStringList("description");
 
         this.publicDisplayed = conf.getBoolean("public", true);
@@ -66,13 +66,17 @@ public class ResidenceData {
         this.conf.set("icon", XMaterial.matchXMaterial(material).name());
     }
 
-    public @Nullable String getDisplayName() {
-        return this.displayName;
+    public @NotNull String getDisplayName() {
+        return Optional.ofNullable(getAliasName()).orElse(getName());
     }
 
-    public void setDisplayName(@NotNull String name) {
-        this.displayName = name;
-        this.conf.set("name", name);
+    public @Nullable String getAliasName() {
+        return this.aliasName;
+    }
+
+    public void setAliasName(@NotNull String name) {
+        this.aliasName = name;
+        this.conf.set("alias", name);
     }
 
     public @NotNull List<String> getDescription() {

@@ -24,7 +24,6 @@ List existing residence in server in a gui, and allow players to manage, telepor
 
 ## Dependencies
 
-- **[Necessary]** Comments part base on [ProtocolLib](https://github.com/dmulloy2/ProtocolLib/).
 - **[Necessary]** Residence part base on [Residence](https://www.zrips.net/residence/).
 - **[Recommend]** Placeholders based on [PlaceholderAPI](https://www.spigotmc.org/resources/6245/) .
 
@@ -33,10 +32,47 @@ see  [Dependencies](https://github.com/ArtformGames/ResidenceList/network/depend
 
 ## Commands
 
-The main command is `/ResidenceList` or `/rl`.
+### Player commands
 
+Main command is `/ResidenceList` or `/rl`.
+
+```text
+# help
+- Display all plugin commands
+
+# open
+- Open the residence list gui
+
+# info <residence-name>
+- Display the residence info
+
+# edit <residence-name>
+- Open the residence edit gui
 ```
 
+### Admin commands
+
+Main command is `/ResidenceListAdmin` or `/rla`, with permission `residencelist.admin`.
+
+```text
+# edit <residence-name>
+- Open the residence edit gui
+
+# manage <player-name>
+- Open the residence list gui of the player
+```
+
+## Placeholders
+
+This function based on [PlaceholderAPI](https://www.spigotmc.org/resources/6245/) .
+You should install it before using placeholders in game.
+
+```text
+# %residencelist_status_<residence>%
+- Display the residence public status
+
+# %residencelist_name_<residence>%
+- Display the residence alias name or the residence name(if alias not set)
 ```
 
 ## Configurations

@@ -1,7 +1,6 @@
 package com.artformgames.plugin.residencelist.conf;
 
 import cc.carm.lib.configuration.core.ConfigurationRoot;
-import cc.carm.lib.configuration.core.annotation.ConfigPath;
 import cc.carm.lib.configuration.core.annotation.HeaderComment;
 import cc.carm.lib.configuration.core.value.type.ConfiguredValue;
 import com.cryptomorin.xseries.XMaterial;
