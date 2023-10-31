@@ -7,10 +7,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public record ResidenceRate(
-        @NotNull UUID author, @NotNull List<String> content,
+        @NotNull UUID author, @NotNull String content,
         boolean recommend, @NotNull LocalDateTime time
 ) {
 
@@ -30,7 +33,7 @@ public record ResidenceRate(
     public static @NotNull ResidenceRate deserialize(@NotNull ConfigurationSection section) {
         return new ResidenceRate(
                 UUID.fromString(section.getName()),
-                section.getStringList("content"),
+                section.getString("content", ""),
                 section.getBoolean("recommend"),
                 Optional.ofNullable(section.getString("time"))
                         .map(ResidenceListAPI::parse).orElse(LocalDateTime.now())

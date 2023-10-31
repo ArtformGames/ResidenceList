@@ -54,6 +54,7 @@ public class ResidenceListUI extends AutoPagedGUI {
         return owner != null && residence.isOwner(owner);
     }
 
+    @SuppressWarnings("deprecation")
     public void initItems() {
         setPreviousPageSlot(48);
         setNextPageSlot(50);
@@ -61,7 +62,7 @@ public class ResidenceListUI extends AutoPagedGUI {
         setNextPageUI(PluginConfig.GUI.PAGE_ITEMS.NEXT_PAGE.get(viewer));
 
         if (this.owner != null) {
-            setItem(49, new GUIItem(CONFIG.ITEMS.OWNED.prepare(owner).get(getViewer())) {
+            setItem(49, new GUIItem(CONFIG.ITEMS.OWNED.prepare(owner).setSkullOwner(this.owner).get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     clicker.closeInventory();

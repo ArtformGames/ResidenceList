@@ -31,7 +31,6 @@ public class ResidenceData {
 
     protected boolean publicDisplayed;
     protected final Map<UUID, ResidenceRate> rates;
-    protected final List<UUID> blocked;
 
     public ResidenceData(@NotNull File file, @NotNull ClaimedResidence residence) {
         this.file = file;
@@ -46,7 +45,6 @@ public class ResidenceData {
 
         this.publicDisplayed = conf.getBoolean("public", true);
         this.rates = ResidenceRate.loadFrom(conf.getConfigurationSection("rates"));
-        this.blocked = conf.getStringList("blocked").stream().map(UUID::fromString).toList();
     }
 
     public @NotNull FileConfiguration getConfiguration() {
@@ -122,46 +120,17 @@ public class ResidenceData {
         setRate(rate.author(), rate);
     }
 
-    public void addRate(List<String> content, boolean recommend, UUID author, LocalDateTime time) {
+    public void addRate(String content, boolean recommend, UUID author, LocalDateTime time) {
         addRate(new ResidenceRate(author, content, recommend, time));
     }
 
-    public void addRate(List<String> content, boolean recommend, UUID author) {
+    public void addRate(String content, boolean recommend, UUID author) {
         addRate(content, recommend, author, LocalDateTime.now());
     }
 
     public void removeRate(UUID author) {
         this.rates.remove(author);
         this.conf.set(author.toString(), null);
-    }
-
-    public List<UUID> getBlocked() {
-        return blocked;
-    }
-
-    public void setBlocked(List<UUID> blocked) {
-        this.blocked.clear();
-        this.blocked.addAll(blocked);
-
-        this.conf.set("blocked", blocked);
-    }
-
-    public void addBlocked(UUID uuid) {
-        this.blocked.add(uuid);
-        this.conf.set("blocked", this.blocked);
-    }
-
-    public void removeBlocked(UUID uuid) {
-        this.blocked.remove(uuid);
-        this.conf.set("blocked", this.blocked);
-    }
-
-    public boolean isBlocked(UUID uuid) {
-        return this.blocked.contains(uuid);
-    }
-
-    public boolean isBlocked(Player player) {
-        return isBlocked(player.getUniqueId());
     }
 
     public String getName() {
@@ -181,8 +150,7 @@ public class ResidenceData {
     }
 
     public boolean canTeleport(Player player) {
-        return !isBlocked(player.getUniqueId())
-                && checkPermission(player, Flags.tp, true)
+        return checkPermission(player, Flags.tp, true)
                 && checkPermission(player, Flags.move, true);
     }
 

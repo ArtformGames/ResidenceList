@@ -6,7 +6,11 @@ import cc.carm.lib.configuration.core.value.type.ConfiguredValue;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import org.bukkit.Material;
 
+import java.time.format.DateTimeFormatter;
+
 public class PluginConfig extends ConfigurationRoot {
+
+    public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static final ConfiguredValue<Boolean> DEBUG = ConfiguredValue.of(Boolean.class, false);
 
@@ -28,6 +32,7 @@ public class PluginConfig extends ConfigurationRoot {
 
 
     public static final class INFORMATION extends ConfigurationRoot {
+
 
         public static final ConfiguredItem ICON = ConfiguredItem.create()
                 .defaultType(Material.GRASS_BLOCK)
