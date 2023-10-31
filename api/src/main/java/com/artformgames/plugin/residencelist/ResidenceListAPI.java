@@ -2,13 +2,20 @@ package com.artformgames.plugin.residencelist;
 
 import com.artformgames.plugin.residencelist.api.ResidenceManager;
 import com.artformgames.plugin.residencelist.api.UserManager;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
+import com.bekvon.bukkit.residence.Residence;
+import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 public class ResidenceListAPI {
 
@@ -20,6 +27,24 @@ public class ResidenceListAPI {
 
     public static void openGUI(Player player) {
         plugin.openGUI(player);
+    }
+
+    public static @NotNull ResidenceData getResidenceData(@NotNull ClaimedResidence residence) {
+        return getResidenceManager().getData(residence);
+    }
+
+    public static @Nullable ClaimedResidence getResidence(@NotNull String name) {
+        return Residence.getInstance().getResidenceManager().getByName(name);
+    }
+
+    @Unmodifiable
+    public static @NotNull Map<String, ClaimedResidence> getResidences() {
+        return Collections.unmodifiableMap(Residence.getInstance().getResidenceManager().getResidences());
+    }
+
+    @Unmodifiable
+    public static @NotNull Set<ClaimedResidence> listResidences() {
+        return Set.copyOf(getResidences().values());
     }
 
     public static ResidenceManager getResidenceManager() {

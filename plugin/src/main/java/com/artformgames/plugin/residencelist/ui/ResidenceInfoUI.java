@@ -83,9 +83,8 @@ public class ResidenceInfoUI extends AutoPagedGUI {
     public static final class CONFIG extends ConfigurationRoot {
 
         public static final ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
-                .defaults("&a&lResidence list")
-                .build();
-
+                .defaults("&a&lResidence information of &f%(name)")
+                .params("name").build();
 
         public static final class ITEMS extends ConfigurationRoot {
 
@@ -98,15 +97,41 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     .defaultName("&7Residence owned by &f%(owner)")
                     .defaultLore(
                             "&7",
-                            "&a ▶ Click &8|&f See his residences"
+                            "&a ▶ Click &8|&f See all his residences"
                     ).params("owner").build();
 
-            public static final ConfiguredItem TELEPORT = ConfiguredItem.create()
+            public static final ConfiguredItem TELEPORT_TO = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
                     .defaultName("&dTeleport to residence")
                     .defaultLore(
-                            "&7"
+                            "&7",
+                            "&7Residence location:",
+                            "&f%(world)&7@%(x)&7,&f&(y),&f%(z)",
+                            "",
+                            "&a ▶ Click &8|&f Teleport to residence."
                     ).params("world", "x", "y", "z").build();
+
+
+            public static final ConfiguredItem TELEPORT_DISABLED = ConfiguredItem.create()
+                    .defaultType(Material.ENDER_EYE)
+                    .defaultName("&d&mTeleport")
+                    .defaultLore(
+                            "&7",
+                            "&cThis residence cannot be teleported to.",
+                            ""
+                    ).build();
+
+            public static final ConfiguredItem TELEPORT_MANAGE = ConfiguredItem.create()
+                    .defaultType(Material.ENDER_EYE)
+                    .defaultName("&d&lTeleport")
+                    .defaultLore(
+                            "&7",
+                            "&7Residence location:",
+                            "&f%(world)&7@%(x)&7,&f&(y),&f%(z)",
+                            "",
+                            "&a ▶ LClick &8|&f Teleport to residence.",
+                            "&a ▶ RClick &8|&f Set current location for teleportation."
+                    ).build();
 
             public static final ConfiguredItem COMMENT = ConfiguredItem.create()
                     .defaultType(Material.WRITABLE_BOOK)
@@ -114,6 +139,28 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     .defaultLore(
                             "&7"
                     ).build();
+
+            public static final ConfiguredItem PUBLIC = ConfiguredItem.create()
+                    .defaultType(Material.LIME_DYE)
+                    .defaultName("&7Current: &a&lPublic")
+                    .defaultLore(
+                            " ",
+                            "&7Now all players can see this residence in list.",
+                            " ",
+                            "&a ▶ Click &8|&f Change to &c&lPrivate"
+                    ).build();
+
+            public static final ConfiguredItem PRIVATE = ConfiguredItem.create()
+                    .defaultType(Material.GREEN_DYE)
+                    .defaultName("&7Current: &c&lPrivate")
+                    .defaultLore(
+                            " ",
+                            "&7Now only you can see this residence in list.",
+                            "&7Others can't see it.",
+                            " ",
+                            "&a ▶ Click &8|&f Change to &a&lPublic"
+                    ).build();
+
 
             public static final ConfiguredItem EMPTY = ConfiguredItem.create()
                     .defaultType(Material.BARRIER)

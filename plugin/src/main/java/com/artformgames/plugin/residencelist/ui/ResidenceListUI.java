@@ -9,10 +9,10 @@ import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessageList;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.PreparedItem;
 import com.artformgames.plugin.residencelist.Main;
+import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
-import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -85,15 +85,18 @@ public class ResidenceListUI extends AutoPagedGUI {
         List<ClaimedResidence> display = new ArrayList<>();
 
         data.getPinned().stream()
-                .map(residenceName -> Residence.getInstance().getResidenceManager().getByName(residenceName))
+                .map(ResidenceListAPI::getResidence)
                 .filter(residence -> residence != null && shouldDisplay(residence))
                 .forEach(display::add);
 
-        Residence.getInstance().getResidenceManager().getResidences().values().stream()
+        ResidenceListAPI.listResidences().stream()
                 .filter(residence -> !display.contains(residence) && shouldDisplay(residence))
                 .forEach(display::add);
-
-        display.forEach(residence -> addItem(generateIcon(data, residence)));
+        
+        display.stream().filter(r -> {
+            ResidenceData d = Main.getInstance().getResidenceManager().getData(r);
+            return d.isPublicDisplayed() || (d.isOwner(getViewer()) || getViewer().hasPermission("residence.admin"));
+        }).forEach(residence -> addItem(generateIcon(data, residence)));
     }
 
     protected GUIItem generateIcon(UserListData userData, ClaimedResidence residence) {
