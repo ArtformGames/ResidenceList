@@ -34,7 +34,7 @@ see  [Dependencies](https://github.com/ArtformGames/ResidenceList/network/depend
 
 ### Player commands
 
-Main command is `/ResidenceList` or `/rl`.
+Main command is `/ResidenceList` or `/reslist`.
 
 ```text
 # help
@@ -52,7 +52,7 @@ Main command is `/ResidenceList` or `/rl`.
 
 ### Admin commands
 
-Main command is `/ResidenceListAdmin` or `/rla`, with permission `residencelist.admin`.
+Main command is `/ResidenceListAdmin` or `/reslistadmin`, with permission `residencelist.admin`.
 
 ```text
 # edit <residence-name>

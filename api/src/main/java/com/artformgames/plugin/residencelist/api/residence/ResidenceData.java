@@ -1,5 +1,6 @@
 package com.artformgames.plugin.residencelist.api.residence;
 
+import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.cryptomorin.xseries.XMaterial;
@@ -8,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ResidenceData {
 
@@ -72,7 +76,7 @@ public class ResidenceData {
         return this.aliasName;
     }
 
-    public void setAliasName(@NotNull String name) {
+    public void setNickname(@NotNull String name) {
         this.aliasName = name;
         this.conf.set("alias", name);
     }
@@ -113,7 +117,7 @@ public class ResidenceData {
 
     public void setRate(UUID uuid, ResidenceRate rate) {
         this.rates.put(uuid, rate);
-        this.conf.set(uuid.toString(), rate.serialize());
+        this.conf.set("rates." + uuid.toString(), rate.serialize());
     }
 
     public void addRate(ResidenceRate rate) {
@@ -146,12 +150,21 @@ public class ResidenceData {
     }
 
     public @Nullable Location getTeleportLocation(Player player) {
-        return getResidence().getTeleportLocation(player, false);
+        return getTeleportLocation(player, null);
+    }
+
+    @Contract("_,!null->!null")
+    public @Nullable Location getTeleportLocation(Player player, Location defaults) {
+        return Optional.ofNullable(getResidence().getTeleportLocation(player, false)).orElse(defaults);
+    }
+
+    public int countRate(Predicate<ResidenceRate> predicate) {
+        return (int) getRates().values().stream().filter(predicate).count();
     }
 
     public boolean canTeleport(Player player) {
-        return checkPermission(player, Flags.tp, true)
-                && checkPermission(player, Flags.move, true);
+        return isOwner(player) || (checkPermission(player, Flags.tp, true)
+                && checkPermission(player, Flags.move, true));
     }
 
     public boolean checkPermission(Player player, Flags flags, boolean defaults) {
@@ -170,6 +183,10 @@ public class ResidenceData {
             this.file.createNewFile();
         }
         this.conf.save(this.file);
+    }
+
+    public void modify(Consumer<ResidenceData> modifier) {
+        ResidenceListAPI.getResidenceManager().updateData(this, modifier);
     }
 
 }

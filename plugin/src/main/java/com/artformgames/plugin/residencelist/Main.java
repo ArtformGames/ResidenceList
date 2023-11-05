@@ -3,11 +3,13 @@ package com.artformgames.plugin.residencelist;
 import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.mineconfiguration.bukkit.MineConfiguration;
+import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.hooker.PluginExpansion;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.listener.ResidenceListener;
+import com.artformgames.plugin.residencelist.listener.UserListener;
 import com.artformgames.plugin.residencelist.manager.ResidenceManagerImpl;
 import com.artformgames.plugin.residencelist.manager.UserStorageManager;
 import com.artformgames.plugin.residencelist.utils.GHUpdateChecker;
@@ -45,19 +47,23 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         this.residenceManager = new ResidenceManagerImpl(this);
         this.residenceManager.loadAllResidences();
 
-
     }
 
     @Override
     protected boolean initialize() {
+        if (!Bukkit.getOnlinePlayers().isEmpty()) {
+            log("Load online users' data...");
+            getUserManager().loadOnline(Player::getUniqueId);
+        }
 
         log("Register listeners...");
         GUI.initialize(this);
         registerListener(new EditHandler());
         registerListener(new ResidenceListener());
+        registerListener(new UserListener());
 
         log("Register commands...");
-
+        registerCommand(getName(), new UserCommands(this));
 
         log("Initializing Placeholders...");
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
@@ -83,6 +89,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
     @Override
     protected void shutdown() {
+        GUI.closeAll();
 
         log("Saving all users' data...");
         this.userManager.saveAll();

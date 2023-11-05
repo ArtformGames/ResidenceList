@@ -24,7 +24,7 @@ public record ResidenceRate(
 
     public Map<String, Object> serialize() {
         Map<String, Object> data = new LinkedHashMap<>();
-        data.put("time", time.toString());
+        data.put("time", ResidenceListAPI.format(time));
         data.put("recommend", recommend);
         data.put("content", content);
         return data;

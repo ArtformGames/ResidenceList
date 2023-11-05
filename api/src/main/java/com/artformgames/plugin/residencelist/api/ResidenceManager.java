@@ -1,7 +1,6 @@
 package com.artformgames.plugin.residencelist.api;
 
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
-import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +21,12 @@ public interface ResidenceManager {
         return Objects.requireNonNull(getData(residence.getName()));
     }
 
-    boolean updateData(@NotNull String name, @NotNull Consumer<ResidenceData> dataConsumer);
+    boolean updateData(@NotNull ResidenceData data, @NotNull Consumer<ResidenceData> dataConsumer);
+
+    default boolean updateData(@NotNull String name, @NotNull Consumer<ResidenceData> dataConsumer) {
+        ResidenceData data = getData(name);
+        if (data == null) return false;
+        return updateData(data, dataConsumer);
+    }
 
 }

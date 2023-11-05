@@ -18,7 +18,7 @@ public class ResidenceManagerImpl implements ResidenceManager {
     public static final String RESIDENCE_DATA_FOLDER = "residences";
 
     protected final @NotNull File storageFolder;
-    protected Map<String, ResidenceData> residences;
+    protected Map<String, ResidenceData> residences = new HashMap<>();
 
     public ResidenceManagerImpl(EasyPlugin plugin) {
         this.storageFolder = new File(plugin.getDataFolder(), RESIDENCE_DATA_FOLDER);
@@ -110,11 +110,8 @@ public class ResidenceManagerImpl implements ResidenceManager {
     }
 
     @Override
-    public boolean updateData(@NotNull String name,
+    public boolean updateData(@NotNull ResidenceData data,
                               @NotNull Consumer<ResidenceData> dataConsumer) {
-        ResidenceData data = getData(name);
-        if (data == null) return false;
-        
         dataConsumer.accept(data);
         try {
             data.save();

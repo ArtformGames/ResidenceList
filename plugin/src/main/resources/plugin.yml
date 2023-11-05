@@ -1,0 +1,31 @@
+main: com.artformgames.plugin.residencelist.Main
+name: ${project.name}
+
+version: ${project.version}
+description: ${project.description}
+website: ${project.url}
+
+authors:
+  - CarmJos
+
+api-version: 1.16
+
+depend:
+  - Residence
+softdepend:
+  - PlaceholderAPI
+
+
+permissions:
+  "ResidenceList.admin":
+    default: op
+
+commands:
+  "ResidenceList":
+    usage: "/ResidenceList help"
+    aliases:
+      - reslist
+  "ResidenceListAdmin":
+    usage: "/ResidenceListAdmin help"
+    aliases:
+      - reslistadmin

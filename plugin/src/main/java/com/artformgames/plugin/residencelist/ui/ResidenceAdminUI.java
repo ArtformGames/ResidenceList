@@ -23,21 +23,19 @@ import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
-public class ResidenceListUI extends AutoPagedGUI {
+public class ResidenceAdminUI extends AutoPagedGUI {
 
     public static void open(@NotNull Player player, @Nullable String owner) {
-        new ResidenceListUI(player, owner).openGUI(player);
+        new ResidenceAdminUI(player, owner).openGUI(player);
     }
 
     protected @NotNull Player viewer;
 
     protected @Nullable String owner;
 
-    public ResidenceListUI(@NotNull Player viewer, @Nullable String owner) {
+    public ResidenceAdminUI(@NotNull Player viewer, @Nullable String owner) {
         super(GUIType.SIX_BY_NINE, "", 10, 34);
         this.viewer = viewer;
         this.owner = owner;
@@ -99,56 +97,29 @@ public class ResidenceListUI extends AutoPagedGUI {
 
     public void loadResidences() {
         UserListData data = getPlayerData();
-        List<ClaimedResidence> display = new ArrayList<>();
-
-        data.getPinned().stream().map(ResidenceListAPI::getResidence).filter(residence -> residence != null && checkOwner(residence)).forEach(display::add);
-
-        ResidenceListAPI.listResidences().stream().filter(residence -> !display.contains(residence) && checkOwner(residence)).forEach(display::add);
-
-        display.stream().filter(r -> {
-            ResidenceData d = Main.getInstance().getResidenceManager().getData(r);
-            return d.isPublicDisplayed() || (d.isOwner(getViewer()));
-        }).forEach(residence -> addItem(generateIcon(data, residence)));
+        ResidenceListAPI.listResidences().forEach(residence -> addItem(generateIcon(residence)));
     }
 
-    protected GUIItem generateIcon(UserListData userData, ClaimedResidence residence) {
+    protected GUIItem generateIcon(ClaimedResidence residence) {
         ResidenceData data = Main.getInstance().getResidenceManager().getData(residence);
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 data.getDisplayName(), data.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
                 data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
-        );   if (data.canTeleport(viewer)) {
+        );
+        if (data.canTeleport(viewer)) {
             icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.TELEPORTABLE);
         } else {
             icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.NORMAL);
         }
         if (!data.getDescription().isEmpty()) icon.insertLore("description", data.getDescription());
-        if (userData.isPinned(residence.getName())) {
-            icon.glow();
-        }
-
         if (data.getIcon() != null) icon.handleItem((i, p) -> i.setType(data.getIcon()));
         return new GUIItem(icon.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
-                if (type == ClickType.DROP || type == ClickType.CONTROL_DROP) {      // Pin/Unpin
-                    if (userData.isPinned(residence.getName())) {
-                        userData.removePin(residence.getName());
-                        PluginMessages.UNPIN.SOUND.playTo(clicker);
-                        PluginMessages.UNPIN.MESSAGE.send(clicker, data.getDisplayName());
-                    } else {
-                        userData.setPin(residence.getName(), 0);
-                        PluginMessages.PIN.SOUND.playTo(clicker);
-                        PluginMessages.PIN.MESSAGE.send(clicker, data.getDisplayName());
-                    }
-                    open(getViewer(), owner);
-                } else if (type.isLeftClick()) { // View information
+                if (type.isLeftClick()) { // View information
                     PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
-                    if (data.isOwner(clicker)) {
-                        ResidenceManageUI.open(getViewer(), data, ResidenceListUI.this);
-                    } else {
-                        ResidenceInfoUI.open(getViewer(), data, ResidenceListUI.this);
-                    }
+                    ResidenceManageUI.open(getViewer(), data, ResidenceAdminUI.this);
                 } else if (type.isRightClick()) { // Teleport to residence (If allowed)
                     if (!data.canTeleport(viewer)) return;
                     Location target = data.getTeleportLocation(viewer);

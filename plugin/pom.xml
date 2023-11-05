@@ -18,6 +18,8 @@
     <artifactId>residencelist-plugin</artifactId>
     <packaging>jar</packaging>
 
+    <name>ResidenceList</name>
+
     <dependencies>
 
         <dependency>
