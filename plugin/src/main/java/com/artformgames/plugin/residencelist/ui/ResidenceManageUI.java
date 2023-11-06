@@ -308,9 +308,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
         public static final class ADDITIONAL_LORE extends ConfigurationRoot {
 
             public static final ConfiguredMessageList<String> CLICK = ConfiguredMessageList.asStrings().defaults(
-                    "&a ▶ LClick &8|&f Pin/Unpin residence",
-                    "&a ▶ RClick &8|&f Set residence's nickname",
-                    "&a ▶ Middle &8|&f Edit residence's icon"
+                    "&a ▶ LClick &8|&f Pin/Unpin residence"
             ).build();
 
             public static final ConfiguredMessageList<String> REMOVE = ConfiguredMessageList.asStrings().defaults(
