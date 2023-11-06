@@ -56,7 +56,7 @@ public class PluginMessages extends ConfigurationRoot {
         public static final ConfiguredMessageList<BaseComponent[]> ADMIN = list()
                 .defaults(
                         "&e&lResidenceList &fAdmin Commands &7(/reslistadmin)",
-                        "&8#&f manage &e[player]",
+                        "&8#&f open &e[player]",
                         "&8-&7 Open the admin manage GUI.",
                         "&8#&f edit &e<residence>",
                         "&8-&7 Open the residence edit gui",
