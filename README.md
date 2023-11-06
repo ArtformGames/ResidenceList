@@ -20,6 +20,12 @@ List existing residence in server in a gui, and allow players to manage, telepor
 
 ## Features & Advantages
 
+- Display all residences in a GUI!
+- Allow players to edit residence's nickname, description, icon and public status!
+- Allow players to pin their favourite residences!
+- Allow players to rate & comment residences!
+- Admin can manage all residences in a GUI!
+
 ## Screenshots
 
 ![LIST](.doc/images/LIST.png)
