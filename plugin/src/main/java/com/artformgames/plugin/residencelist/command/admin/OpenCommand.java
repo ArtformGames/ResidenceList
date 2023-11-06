@@ -1,11 +1,11 @@
-package com.artformgames.plugin.residencelist.command.user;
+package com.artformgames.plugin.residencelist.command.admin;
 
 import cc.carm.lib.easyplugin.command.SimpleCompleter;
 import cc.carm.lib.easyplugin.command.SubCommand;
-import com.artformgames.plugin.residencelist.command.UserCommands;
+import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
+import com.artformgames.plugin.residencelist.ui.ResidenceAdminUI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -17,9 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class OpenCommand extends SubCommand<UserCommands> {
+public class OpenCommand extends SubCommand<AdminCommands> {
 
-    public OpenCommand(@NotNull UserCommands parent, String identifier, String... aliases) {
+    public OpenCommand(@NotNull AdminCommands parent, String identifier, String... aliases) {
         super(parent, identifier, aliases);
     }
 
@@ -41,7 +41,7 @@ public class OpenCommand extends SubCommand<UserCommands> {
             }
         }
 
-        ResidenceListUI.open(player, Optional.ofNullable(owner).map(OfflinePlayer::getName).orElse(null));
+        ResidenceAdminUI.open(player, Optional.ofNullable(owner).map(OfflinePlayer::getName).orElse(null));
         PluginConfig.GUI.OPEN_SOUND.playTo(player);
 
         return null;

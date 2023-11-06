@@ -93,7 +93,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             ).get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
-                    clicker.teleport(teleportLocation);
+                    data.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
                     PluginMessages.TELEPORT.SOUND.playTo(clicker);
                 }
             });
@@ -118,7 +118,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             rateIcon = CONFIG.ITEMS.RATE.get(getViewer());
         } else {
             rateIcon = CONFIG.ITEMS.RATED.prepare(ResidenceListAPI.format(rated.time()))
-                    .insertLore("comment", GUIUtils.sortContent(rated.content(), 25))
+                    .insertLore("comment", GUIUtils.sortContent(rated.content()))
                     .get(getViewer());
         }
         setItem(15, new GUIItem(rateIcon) {
@@ -155,7 +155,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     PluginConfig.DATETIME_FORMATTER.format(value.time())
             );
             preparedItem.setSkullOwner(value.author());
-            preparedItem.insertLore("comment", GUIUtils.sortContent(value.content(), 25));
+            preparedItem.insertLore("comment", GUIUtils.sortContent(value.content()));
             addItem(new GUIItem(preparedItem.get(getViewer())) {
 
             });

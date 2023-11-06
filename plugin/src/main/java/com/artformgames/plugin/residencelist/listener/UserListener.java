@@ -15,8 +15,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import java.util.Optional;
 
 public class UserListener implements Listener {
-
-
+    
     protected UserStorageManager getUserManager() {
         return Main.getInstance().getUserManager();
     }

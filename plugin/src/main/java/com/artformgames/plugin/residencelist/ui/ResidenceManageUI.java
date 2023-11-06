@@ -93,7 +93,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (type.isLeftClick()) {
-                    clicker.teleport(teleportLocation);
+                    getData().getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
                     PluginMessages.TELEPORT.SOUND.playTo(clicker);
                 } else if (type.isRightClick()) {
                     getData().getResidence().setTpLoc(clicker, clicker.hasPermission("residence.admin"));
@@ -137,9 +137,16 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
                     SelectIconGUI.open(clicker, ((player, itemStack) -> {
-                        getData().modify(d -> d.setIcon(itemStack.getType()));
-                        PluginMessages.EDIT.ICON_UPDATED.send(player, getData().getDisplayName());
-                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                        Material material = itemStack.getType();
+                        if (PluginConfig.SETTINGS.BLOCKED_ICON_TYPES.contains(material)) {
+                            PluginMessages.EDIT.ICON_BLOCKED.send(player, getData().getDisplayName());
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(player);
+                        } else {
+                            getData().modify(d -> d.setIcon(itemStack.getType()));
+                            PluginMessages.EDIT.ICON_UPDATED.send(player, getData().getDisplayName());
+                            PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                        }
+
                         loadIcon();
                         openGUI(player);
                     }));
@@ -185,7 +192,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     PluginConfig.DATETIME_FORMATTER.format(value.time())
             );
             preparedItem.setSkullOwner(value.author());
-            preparedItem.insertLore("comment", GUIUtils.sortContent(value.content(), 25));
+            preparedItem.insertLore("comment", GUIUtils.sortContent(value.content()));
             if (getViewer().hasPermission("residence.admin")) {
                 preparedItem.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.REMOVE);
             }

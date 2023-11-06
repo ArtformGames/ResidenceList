@@ -1,10 +1,10 @@
-package com.artformgames.plugin.residencelist.command.user;
+package com.artformgames.plugin.residencelist.command.admin;
 
 import cc.carm.lib.easyplugin.command.SimpleCompleter;
 import cc.carm.lib.easyplugin.command.SubCommand;
 import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
-import com.artformgames.plugin.residencelist.command.UserCommands;
+import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.ui.ResidenceManageUI;
@@ -16,9 +16,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class EditCommand extends SubCommand<UserCommands> {
+public class EditCommand extends SubCommand<AdminCommands> {
 
-    public EditCommand(@NotNull UserCommands parent, String identifier, String... aliases) {
+    public EditCommand(@NotNull AdminCommands parent, String identifier, String... aliases) {
         super(parent, identifier, aliases);
     }
 
@@ -37,11 +37,6 @@ public class EditCommand extends SubCommand<UserCommands> {
         }
 
         ResidenceData data = ResidenceListAPI.getResidenceData(residence);
-        if (!residence.isOwner(player)) {
-            PluginMessages.COMMAND.NOT_OWNER.send(sender, residence.getName(), data.getDisplayName());
-            return null;
-        }
-
         ResidenceManageUI.open(player, data, null);
         PluginConfig.GUI.OPEN_SOUND.playTo(player);
         return null;
@@ -53,9 +48,7 @@ public class EditCommand extends SubCommand<UserCommands> {
             return SimpleCompleter.objects(
                     args[args.length - 1],
                     ResidenceListAPI.getResidences()
-                            .values().stream()
-                            .filter(r -> r.isOwner(sender))
-                            .map(ClaimedResidence::getName)
+                            .values().stream().map(ClaimedResidence::getName)
             );
         } else return SimpleCompleter.none();
     }

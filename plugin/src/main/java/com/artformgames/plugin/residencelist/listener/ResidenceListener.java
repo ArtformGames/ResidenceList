@@ -12,12 +12,10 @@ public class ResidenceListener implements Listener {
     @EventHandler
     public void onRename(ResidenceRenameEvent event) {
         // When a residence is renamed, we also need to update the residence name in our database.
-
         ClaimedResidence residence = event.getResidence();
-        if (!residence.isMainResidence()) return; // Only main residence can be stored.
-
+        if (residence.isSubzone()) return; // Only main residence can be stored.
         ResidenceManagerImpl manager = Main.getInstance().getResidenceManager();
         manager.renameResidence(event.getOldResidenceName(), event.getNewResidenceName());
     }
-    
+
 }

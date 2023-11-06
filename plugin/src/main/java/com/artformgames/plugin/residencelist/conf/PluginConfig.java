@@ -2,17 +2,17 @@ package com.artformgames.plugin.residencelist.conf;
 
 import cc.carm.lib.configuration.core.ConfigurationRoot;
 import cc.carm.lib.configuration.core.annotation.HeaderComment;
+import cc.carm.lib.configuration.core.value.type.ConfiguredList;
 import cc.carm.lib.configuration.core.value.type.ConfiguredValue;
 import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredSound;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
-import com.artformgames.plugin.residencelist.ui.ResidenceInfoUI;
-import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
-import com.artformgames.plugin.residencelist.ui.ResidenceManageUI;
-import com.artformgames.plugin.residencelist.ui.SelectIconGUI;
+import com.artformgames.plugin.residencelist.ui.*;
+import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class PluginConfig extends ConfigurationRoot {
 
@@ -36,6 +36,17 @@ public class PluginConfig extends ConfigurationRoot {
     })
     public static final ConfiguredValue<Boolean> CHECK_UPDATE = ConfiguredValue.of(Boolean.class, true);
 
+
+    public static final class SETTINGS extends ConfigurationRoot {
+
+        public static final ConfiguredValue<Integer> LETTERS_PRE_LINE = ConfiguredValue.of(Integer.class, 35);
+
+        public static final ConfiguredList<Material> BLOCKED_ICON_TYPES = ConfiguredList.builderOf(Material.class).fromString()
+                .parseValue(s -> Objects.requireNonNull(XMaterial.matchXMaterial(s).orElseThrow().parseMaterial()))
+                .serializeValue(d -> XMaterial.matchXMaterial(d).name())
+                .defaults(Material.CHEST, Material.CHAIN, Material.REDSTONE).build();
+
+    }
 
     public static final class ICON extends ConfigurationRoot {
 
@@ -132,8 +143,8 @@ public class PluginConfig extends ConfigurationRoot {
         public static final Class<?> LIST = ResidenceListUI.CONFIG.class;
         public static final Class<?> INFO = ResidenceInfoUI.CONFIG.class;
         public static final Class<?> MANAGE = ResidenceManageUI.CONFIG.class;
+        public static final Class<?> ADMIN = ResidenceAdminUI.CONFIG.class;
         public static final Class<?> SELECT = SelectIconGUI.CONFIG.class;
-
 
     }
 

@@ -97,7 +97,7 @@ public class ResidenceAdminUI extends AutoPagedGUI {
 
     public void loadResidences() {
         UserListData data = getPlayerData();
-        ResidenceListAPI.listResidences().forEach(residence -> addItem(generateIcon(residence)));
+        ResidenceListAPI.listResidences().stream().filter(this::checkOwner).forEach(residence -> addItem(generateIcon(residence)));
     }
 
     protected GUIItem generateIcon(ClaimedResidence residence) {
@@ -127,7 +127,7 @@ public class ResidenceAdminUI extends AutoPagedGUI {
                         PluginMessages.TELEPORT.NO_LOCATION.send(clicker, data.getDisplayName());
                         return;
                     }
-                    getViewer().teleport(target);
+                    data.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
                     PluginMessages.TELEPORT.SOUND.playTo(clicker);
                 }
             }
@@ -149,9 +149,14 @@ public class ResidenceAdminUI extends AutoPagedGUI {
 
         public static final class ADDITIONAL_LORE extends ConfigurationRoot {
 
-            public static final ConfiguredMessageList<String> NORMAL = ConfiguredMessageList.asStrings().defaults("&a ▶ Click &8|&f View information", "&a ▶ Drop &8|&f Pin/Unpin residence").build();
+            public static final ConfiguredMessageList<String> NORMAL = ConfiguredMessageList.asStrings().defaults(
+                    "&a ▶ Click &8|&f View information"
+            ).build();
 
-            public static final ConfiguredMessageList<String> TELEPORTABLE = ConfiguredMessageList.asStrings().defaults("&a ▶ LClick &8|&f View information", "&a ▶ RClick &8|&f Teleport to residence", "&a ▶  Drop  &8|&f Pin/Unpin residence").build();
+            public static final ConfiguredMessageList<String> TELEPORTABLE = ConfiguredMessageList.asStrings().defaults(
+                    "&a ▶ LClick &8|&f View information",
+                    "&a ▶ RClick &8|&f Teleport to residence"
+            ).build();
 
         }
 

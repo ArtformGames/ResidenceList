@@ -117,7 +117,8 @@ public class ResidenceListUI extends AutoPagedGUI {
                 data.getDisplayName(), data.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
                 data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
-        );   if (data.canTeleport(viewer)) {
+        );
+        if (data.canTeleport(viewer)) {
             icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.TELEPORTABLE);
         } else {
             icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.NORMAL);
@@ -156,7 +157,7 @@ public class ResidenceListUI extends AutoPagedGUI {
                         PluginMessages.TELEPORT.NO_LOCATION.send(clicker, data.getDisplayName());
                         return;
                     }
-                    getViewer().teleport(target);
+                    data.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
                     PluginMessages.TELEPORT.SOUND.playTo(clicker);
                 }
             }

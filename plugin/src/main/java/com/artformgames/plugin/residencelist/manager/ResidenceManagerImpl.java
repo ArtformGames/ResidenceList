@@ -38,9 +38,9 @@ public class ResidenceManagerImpl implements ResidenceManager {
         return residences;
     }
 
-    public void loadAllResidences() {
+    public int loadAllResidences() {
         String[] filesList = getStorageFolder().list();
-        if (filesList == null || filesList.length < 1) return;
+        if (filesList == null || filesList.length < 1) return 0;
 
         List<File> files = Arrays.stream(filesList)
                 .map(s -> new File(getStorageFolder(), s))
@@ -63,6 +63,7 @@ public class ResidenceManagerImpl implements ResidenceManager {
         }
 
         this.residences = loaded;
+        return loaded.size();
     }
 
     public ResidenceData loadResidence(String residenceName, File file) throws Exception {
@@ -72,7 +73,7 @@ public class ResidenceManagerImpl implements ResidenceManager {
     }
 
     public void renameResidence(String oldName, String newName) {
-        ResidenceData data = this.residences.get(oldName);
+        ResidenceData data = this.residences.remove(oldName);
         if (data == null) return; // No data for this residence yet.
 
         this.residences.remove(oldName);
@@ -82,7 +83,6 @@ public class ResidenceManagerImpl implements ResidenceManager {
         try {
             data.renameTo(n);
             Main.debugging("Successfully renamed residence data for '" + oldName + "' to '" + newName + "' !");
-
         } catch (Exception e) {
             Main.severe("Error occurred when renaming residence data for '" + oldName + "' to '" + newName + "' !");
             e.printStackTrace();

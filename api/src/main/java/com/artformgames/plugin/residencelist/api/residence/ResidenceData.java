@@ -44,7 +44,7 @@ public class ResidenceData {
         this.icon = Optional.ofNullable(conf.getString("icon"))
                 .flatMap(XMaterial::matchXMaterial)
                 .map(XMaterial::parseMaterial).orElse(null);
-        this.aliasName = conf.getString("alias", residence.getName());
+        this.aliasName = conf.getString("nickname", residence.getName());
         this.description = conf.getStringList("description");
 
         this.publicDisplayed = conf.getBoolean("public", true);
@@ -78,7 +78,7 @@ public class ResidenceData {
 
     public void setNickname(@NotNull String name) {
         this.aliasName = name;
-        this.conf.set("alias", name);
+        this.conf.set("nickname", name);
     }
 
     public @NotNull List<String> getDescription() {
@@ -163,8 +163,7 @@ public class ResidenceData {
     }
 
     public boolean canTeleport(Player player) {
-        return isOwner(player) || (checkPermission(player, Flags.tp, true)
-                && checkPermission(player, Flags.move, true));
+        return isOwner(player) || checkPermission(player, Flags.tp, true);
     }
 
     public boolean checkPermission(Player player, Flags flags, boolean defaults) {

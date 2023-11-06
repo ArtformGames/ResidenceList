@@ -2,7 +2,9 @@ package com.artformgames.plugin.residencelist;
 
 import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.gui.GUI;
+import cc.carm.lib.easyplugin.i18n.EasyPluginMessageProvider;
 import cc.carm.lib.mineconfiguration.bukkit.MineConfiguration;
+import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
@@ -23,6 +25,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
 
     public Main() {
+        super(EasyPluginMessageProvider.EN_US);
         Main.instance = this;
         ResidenceListAPI.plugin = this;
     }
@@ -43,14 +46,17 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         log("Initialize users manager...");
         this.userManager = new UserStorageManager(this);
 
-        log("Initialize requests manager...");
+        log("Initialize residence manager...");
         this.residenceManager = new ResidenceManagerImpl(this);
-        this.residenceManager.loadAllResidences();
 
     }
 
     @Override
     protected boolean initialize() {
+        log("Loading all residence data...");
+        int loaded = this.residenceManager.loadAllResidences();
+        log("Successfully loaded " + loaded + " residence data.");
+
         if (!Bukkit.getOnlinePlayers().isEmpty()) {
             log("Load online users' data...");
             getUserManager().loadOnline(Player::getUniqueId);
@@ -63,7 +69,8 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         registerListener(new UserListener());
 
         log("Register commands...");
-        registerCommand(getName(), new UserCommands(this));
+        registerCommand("ResidenceList", new UserCommands(this));
+        registerCommand("ResidenceListAdmin", new AdminCommands(this));
 
         log("Initializing Placeholders...");
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {

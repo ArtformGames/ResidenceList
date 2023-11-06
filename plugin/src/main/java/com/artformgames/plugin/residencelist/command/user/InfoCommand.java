@@ -7,7 +7,7 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.ui.ResidenceManageUI;
+import com.artformgames.plugin.residencelist.ui.ResidenceInfoUI;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,9 +16,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class EditCommand extends SubCommand<UserCommands> {
+public class InfoCommand extends SubCommand<UserCommands> {
 
-    public EditCommand(@NotNull UserCommands parent, String identifier, String... aliases) {
+    public InfoCommand(@NotNull UserCommands parent, String identifier, String... aliases) {
         super(parent, identifier, aliases);
     }
 
@@ -37,12 +37,7 @@ public class EditCommand extends SubCommand<UserCommands> {
         }
 
         ResidenceData data = ResidenceListAPI.getResidenceData(residence);
-        if (!residence.isOwner(player)) {
-            PluginMessages.COMMAND.NOT_OWNER.send(sender, residence.getName(), data.getDisplayName());
-            return null;
-        }
-
-        ResidenceManageUI.open(player, data, null);
+        ResidenceInfoUI.open(player, data, null);
         PluginConfig.GUI.OPEN_SOUND.playTo(player);
         return null;
     }
@@ -53,9 +48,7 @@ public class EditCommand extends SubCommand<UserCommands> {
             return SimpleCompleter.objects(
                     args[args.length - 1],
                     ResidenceListAPI.getResidences()
-                            .values().stream()
-                            .filter(r -> r.isOwner(sender))
-                            .map(ClaimedResidence::getName)
+                            .values().stream().map(ClaimedResidence::getName)
             );
         } else return SimpleCompleter.none();
     }

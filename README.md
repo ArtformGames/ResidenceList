@@ -22,6 +22,9 @@ List existing residence in server in a gui, and allow players to manage, telepor
 
 ## Screenshots
 
+![LIST](.doc/images/LIST.png)
+![RATE](.doc/images/RATE.png)
+
 ## Dependencies
 
 - **[Necessary]** Residence part base on [Residence](https://www.zrips.net/residence/).
@@ -40,7 +43,7 @@ Main command is `/ResidenceList` or `/reslist`.
 # help
 - Display all plugin commands
 
-# open
+# open [player-name]
 - Open the residence list gui
 
 # info <residence-name>
@@ -55,11 +58,14 @@ Main command is `/ResidenceList` or `/reslist`.
 Main command is `/ResidenceListAdmin` or `/reslistadmin`, with permission `residencelist.admin`.
 
 ```text
+# open [player-name]
+- Open the residence manage list gui
+
 # edit <residence-name>
 - Open the residence edit gui
 
-# manage <player-name>
-- Open the residence list gui of the player
+# reload
+- Reload the plugin configuration
 ```
 
 ## Placeholders

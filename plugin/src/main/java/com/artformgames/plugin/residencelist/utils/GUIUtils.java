@@ -1,5 +1,7 @@
 package com.artformgames.plugin.residencelist.utils;
 
+import com.artformgames.plugin.residencelist.conf.PluginConfig;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -8,6 +10,11 @@ public class GUIUtils {
 
     private GUIUtils() {
         throw new UnsupportedOperationException();
+    }
+
+
+    public static List<String> sortContent(String content) {
+        return sortContent(content, PluginConfig.SETTINGS.LETTERS_PRE_LINE.getNotNull());
     }
 
     public static List<String> sortContent(String content, int lineLength) {
