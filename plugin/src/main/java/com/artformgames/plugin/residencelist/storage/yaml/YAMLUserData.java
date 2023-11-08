@@ -1,4 +1,4 @@
-package com.artformgames.plugin.residencelist.user;
+package com.artformgames.plugin.residencelist.storage.yaml;
 
 import cc.carm.lib.easyplugin.user.UserData;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
@@ -9,11 +9,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class UserListStorage extends UserData<UUID> implements UserListData {
+public class YAMLUserData extends UserData<UUID> implements UserListData {
 
     protected @NotNull ArrayList<String> pined;
 
-    public UserListStorage(@NotNull UUID key, @NotNull ArrayList<String> pined) {
+    public YAMLUserData(@NotNull UUID key, @NotNull ArrayList<String> pined) {
         super(key);
         this.pined = pined;
     }
@@ -40,4 +40,13 @@ public class UserListStorage extends UserData<UUID> implements UserListData {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

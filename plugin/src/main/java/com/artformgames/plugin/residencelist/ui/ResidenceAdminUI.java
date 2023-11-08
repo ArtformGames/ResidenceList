@@ -113,7 +113,7 @@ public class ResidenceAdminUI extends AutoPagedGUI {
             icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.NORMAL);
         }
         if (!data.getDescription().isEmpty()) icon.insertLore("description", data.getDescription());
-        if (data.getIcon() != null) icon.handleItem((i, p) -> i.setType(data.getIcon()));
+        if (data.getIconMaterial() != null) icon.handleItem((i, p) -> i.setType(data.getIconMaterial()));
         return new GUIItem(icon.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {

@@ -4,6 +4,7 @@ import cc.carm.lib.easyplugin.EasyPlugin;
 import com.artformgames.plugin.residencelist.Main;
 import com.artformgames.plugin.residencelist.api.ResidenceManager;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
+import com.artformgames.plugin.residencelist.storage.yaml.YAMLResidenceData;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.jetbrains.annotations.NotNull;
@@ -69,7 +70,7 @@ public class ResidenceManagerImpl implements ResidenceManager {
     public ResidenceData loadResidence(String residenceName, File file) throws Exception {
         ClaimedResidence residence = Residence.getInstance().getResidenceManager().getByName(residenceName);
         if (residence == null) throw new Exception("Residence not found: " + residenceName);
-        return new ResidenceData(file, residence);
+        return new YAMLResidenceData(file, residence);
     }
 
     public void renameResidence(String oldName, String newName) {
@@ -103,7 +104,7 @@ public class ResidenceManagerImpl implements ResidenceManager {
         if (existed != null) return existed;
 
         File dataFile = new File(this.storageFolder, residence.getName() + ".yaml");
-        ResidenceData data = new ResidenceData(dataFile, residence);
+        ResidenceData data = new YAMLResidenceData(dataFile, residence);
         this.residences.put(residence.getName(), data);
 
         return data;

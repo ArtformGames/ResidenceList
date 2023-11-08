@@ -3,15 +3,13 @@ package com.artformgames.plugin.residencelist.api.residence;
 import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -22,169 +20,94 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class ResidenceData {
+public interface ResidenceData {
 
-    protected @NotNull File file;
-    protected final @NotNull FileConfiguration conf;
+    @NotNull ClaimedResidence getResidence();
 
-    protected final @NotNull ClaimedResidence residence;
+    @Nullable Material getIconMaterial();
 
-    protected @Nullable Material icon;
-    protected @Nullable String aliasName;
-    protected @NotNull List<String> description;
+    void setIconMaterial(@NotNull Material material);
 
-    protected boolean publicDisplayed;
-    protected final Map<UUID, ResidenceRate> rates;
-
-    public ResidenceData(@NotNull File file, @NotNull ClaimedResidence residence) {
-        this.file = file;
-        this.conf = file.exists() ? YamlConfiguration.loadConfiguration(file) : new YamlConfiguration();
-        this.residence = residence;
-
-        this.icon = Optional.ofNullable(conf.getString("icon"))
-                .flatMap(XMaterial::matchXMaterial)
-                .map(XMaterial::parseMaterial).orElse(null);
-        this.aliasName = conf.getString("nickname", residence.getName());
-        this.description = conf.getStringList("description");
-
-        this.publicDisplayed = conf.getBoolean("public", true);
-        this.rates = ResidenceRate.loadFrom(conf.getConfigurationSection("rates"));
-    }
-
-    public @NotNull FileConfiguration getConfiguration() {
-        return conf;
-    }
-
-    public @NotNull ClaimedResidence getResidence() {
-        return residence;
-    }
-
-    public @Nullable Material getIcon() {
-        return icon;
-    }
-
-    public void setIcon(@NotNull Material material) {
-        this.icon = material;
-        this.conf.set("icon", XMaterial.matchXMaterial(material).name());
-    }
-
-    public @NotNull String getDisplayName() {
+    default @NotNull String getDisplayName() {
         return Optional.ofNullable(getAliasName()).orElse(getName());
     }
 
-    public @Nullable String getAliasName() {
-        return this.aliasName;
-    }
+    @Nullable String getAliasName();
 
-    public void setNickname(@NotNull String name) {
-        this.aliasName = name;
-        this.conf.set("nickname", name);
-    }
+    void setNickname(@NotNull String name);
 
-    public @NotNull List<String> getDescription() {
-        return description;
-    }
+    @Unmodifiable
+    @NotNull List<String> getDescription();
 
-    public void setDescription(@NotNull List<String> description) {
-        this.description = description;
-        this.conf.set("description", description);
-    }
+    void setDescription(@NotNull List<String> description);
 
-    public void setDescription(@NotNull String... descriptions) {
+    default void setDescription(@NotNull String... descriptions) {
         setDescription(List.of(descriptions));
     }
 
-    public boolean isPublicDisplayed() {
-        return publicDisplayed;
-    }
+    boolean isPublicDisplayed();
 
-    public void setPublicDisplayed(boolean publicDisplayed) {
-        this.publicDisplayed = publicDisplayed;
-        this.conf.set("public", publicDisplayed);
-    }
+    void setPublicDisplayed(boolean publicDisplayed);
 
-    public Map<UUID, ResidenceRate> getRates() {
-        return rates;
-    }
+    Map<UUID, ResidenceRate> getRates();
 
-    public void setRates(Map<UUID, ResidenceRate> rates) {
-        this.rates.clear();
-        this.rates.putAll(rates);
+    void setRates(Map<UUID, ResidenceRate> rates);
 
-        this.conf.set("rates", null); // Clear existing rates.
-        rates.forEach((k, v) -> this.conf.set(k.toString(), v.serialize()));
-    }
+    void setRate(UUID uuid, ResidenceRate rate);
 
-    public void setRate(UUID uuid, ResidenceRate rate) {
-        this.rates.put(uuid, rate);
-        this.conf.set("rates." + uuid.toString(), rate.serialize());
-    }
-
-    public void addRate(ResidenceRate rate) {
+    default void addRate(ResidenceRate rate) {
         setRate(rate.author(), rate);
     }
 
-    public void addRate(String content, boolean recommend, UUID author, LocalDateTime time) {
+    default void addRate(String content, boolean recommend, UUID author, LocalDateTime time) {
         addRate(new ResidenceRate(author, content, recommend, time));
     }
 
-    public void addRate(String content, boolean recommend, UUID author) {
+    default void addRate(String content, boolean recommend, UUID author) {
         addRate(content, recommend, author, LocalDateTime.now());
     }
 
-    public void removeRate(UUID author) {
-        this.rates.remove(author);
-        this.conf.set(author.toString(), null);
-    }
+    void removeRate(UUID author);
 
-    public String getName() {
+    default String getName() {
         return getResidence().getName();
     }
 
-    public String getOwner() {
+    default String getOwner() {
         return getResidence().getOwner();
     }
 
-    public boolean isOwner(@NotNull Player player) {
+    default boolean isOwner(@NotNull Player player) {
         return getResidence().isOwner(player);
     }
 
-    public @Nullable Location getTeleportLocation(Player player) {
+    default @Nullable Location getTeleportLocation(Player player) {
         return getTeleportLocation(player, null);
     }
 
     @Contract("_,!null->!null")
-    public @Nullable Location getTeleportLocation(Player player, Location defaults) {
+    default @Nullable Location getTeleportLocation(Player player, Location defaults) {
         return Optional.ofNullable(getResidence().getTeleportLocation(player, false)).orElse(defaults);
     }
 
-    public int countRate(Predicate<ResidenceRate> predicate) {
+    default int countRate(Predicate<ResidenceRate> predicate) {
         return (int) getRates().values().stream().filter(predicate).count();
     }
 
-    public boolean canTeleport(Player player) {
+    default boolean canTeleport(Player player) {
         return isOwner(player) || checkPermission(player, Flags.tp, true);
     }
 
-    public boolean checkPermission(Player player, Flags flags, boolean defaults) {
+    default boolean checkPermission(Player player, Flags flags, boolean defaults) {
         return getResidence().getPermissions().playerHas(player, flags, defaults);
     }
 
 
-    public void renameTo(@NotNull File newFile) throws Exception {
-        if (this.file.exists()) this.file.delete(); // Delete old file.
-        this.file = newFile;
-        save();
-    }
+    void renameTo(@NotNull File newFile) throws Exception;
 
-    public void save() throws Exception {
-        if (!this.file.exists()) {
-            this.file.createNewFile();
-        }
-        this.conf.save(this.file);
-    }
+    void save() throws Exception;
 
-    public void modify(Consumer<ResidenceData> modifier) {
+    default void modify(Consumer<ResidenceData> modifier) {
         ResidenceListAPI.getResidenceManager().updateData(this, modifier);
     }
 

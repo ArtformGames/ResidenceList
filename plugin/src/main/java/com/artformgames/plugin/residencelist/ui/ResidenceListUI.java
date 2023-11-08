@@ -128,7 +128,7 @@ public class ResidenceListUI extends AutoPagedGUI {
             icon.glow();
         }
 
-        if (data.getIcon() != null) icon.handleItem((i, p) -> i.setType(data.getIcon()));
+        if (data.getIconMaterial() != null) icon.handleItem((i, p) -> i.setType(data.getIconMaterial()));
         return new GUIItem(icon.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {

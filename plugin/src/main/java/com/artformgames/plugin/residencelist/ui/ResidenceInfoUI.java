@@ -176,7 +176,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
         if (!getData().getDescription().isEmpty()) icon.insertLore("description", getData().getDescription());
         if (userData.isPinned(residence.getName())) icon.glow();
-        if (getData().getIcon() != null) icon.handleItem((i, p) -> i.setType(getData().getIcon()));
+        if (getData().getIconMaterial() != null) icon.handleItem((i, p) -> i.setType(getData().getIconMaterial()));
         return new GUIItem(icon.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {

@@ -3,7 +3,7 @@ package com.artformgames.plugin.residencelist.listener;
 import com.artformgames.plugin.residencelist.Main;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.manager.UserStorageManager;
-import com.artformgames.plugin.residencelist.user.UserListStorage;
+import com.artformgames.plugin.residencelist.storage.yaml.YAMLUserData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -35,7 +35,7 @@ public class UserListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerLogin(PlayerLoginEvent e) {
-        UserListStorage data = getUserManager().getNullable(e.getPlayer().getUniqueId());
+        YAMLUserData data = getUserManager().getNullable(e.getPlayer().getUniqueId());
         if (data == null) {
             e.setResult(PlayerLoginEvent.Result.KICK_OTHER);
             Optional.ofNullable(PluginMessages.LOAD_FAILED.parseToLine(e.getPlayer())).ifPresent(e::setKickMessage);

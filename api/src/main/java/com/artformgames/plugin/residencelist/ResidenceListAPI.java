@@ -25,8 +25,8 @@ public class ResidenceListAPI {
     private ResidenceListAPI() {
     }
 
-    public static void openGUI(Player player) {
-        plugin.openGUI(player);
+    public static void openGUI(Player player, @Nullable String owner) {
+        plugin.openGUI(player, owner);
     }
 
     public static @NotNull ResidenceData getResidenceData(@NotNull ClaimedResidence residence) {

@@ -39,6 +39,9 @@ public class PluginConfig extends ConfigurationRoot {
 
     public static final class SETTINGS extends ConfigurationRoot {
 
+        @HeaderComment("Default residence status (Public / Private)")
+        public static final ConfiguredValue<Boolean> DEFAULT_STATUS = ConfiguredValue.of(Boolean.class, true);
+
         public static final ConfiguredValue<Integer> LETTERS_PRE_LINE = ConfiguredValue.of(Integer.class, 35);
 
         public static final ConfiguredList<Material> BLOCKED_ICON_TYPES = ConfiguredList.builderOf(Material.class).fromString()

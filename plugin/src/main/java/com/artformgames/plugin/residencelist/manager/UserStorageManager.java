@@ -3,7 +3,7 @@ package com.artformgames.plugin.residencelist.manager;
 import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.user.UserDataManager;
 import com.artformgames.plugin.residencelist.api.UserManager;
-import com.artformgames.plugin.residencelist.user.UserListStorage;
+import com.artformgames.plugin.residencelist.storage.yaml.YAMLUserData;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +12,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class UserStorageManager extends UserDataManager<UUID, UserListStorage> implements UserManager {
+public class UserStorageManager extends UserDataManager<UUID, YAMLUserData> implements UserManager {
 
     public static final String USER_DATA_FOLDER = "users";
 
@@ -30,22 +30,22 @@ public class UserStorageManager extends UserDataManager<UUID, UserListStorage> i
     }
 
     @Override
-    public @NotNull UserListStorage emptyUser(@NotNull UUID key) {
-        return new UserListStorage(key, new ArrayList<>());
+    public @NotNull YAMLUserData emptyUser(@NotNull UUID key) {
+        return new YAMLUserData(key, new ArrayList<>());
     }
 
     @Override
-    protected @Nullable UserListStorage loadData(@NotNull UUID key) throws Exception {
+    protected @Nullable YAMLUserData loadData(@NotNull UUID key) throws Exception {
         File userFile = new File(this.folder, key + ".yaml");
         if (userFile.exists()) {
             YamlConfiguration conf = YamlConfiguration.loadConfiguration(userFile);
-            return new UserListStorage(key, new ArrayList<>(conf.getStringList("pinned")));
+            return new YAMLUserData(key, new ArrayList<>(conf.getStringList("pinned")));
         }
         return null;
     }
 
     @Override
-    protected void saveData(@NotNull UserListStorage data) throws Exception {
+    protected void saveData(@NotNull YAMLUserData data) throws Exception {
         File userFile = new File(this.folder, data.getKey() + ".yaml");
         YamlConfiguration conf;
 

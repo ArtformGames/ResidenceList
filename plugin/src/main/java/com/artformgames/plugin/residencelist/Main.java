@@ -14,11 +14,13 @@ import com.artformgames.plugin.residencelist.listener.ResidenceListener;
 import com.artformgames.plugin.residencelist.listener.UserListener;
 import com.artformgames.plugin.residencelist.manager.ResidenceManagerImpl;
 import com.artformgames.plugin.residencelist.manager.UserStorageManager;
+import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
 import com.artformgames.plugin.residencelist.utils.GHUpdateChecker;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Main extends EasyPlugin implements ResidenceListPlugin {
     private static Main instance;
@@ -132,8 +134,8 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
     }
 
     @Override
-    public void openGUI(@NotNull Player player) {
-
+    public void openGUI(@NotNull Player player, @Nullable String owner) {
+        ResidenceListUI.open(player, owner);
     }
 
     @Override
