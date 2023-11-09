@@ -165,7 +165,7 @@ public class PluginMessages extends ConfigurationRoot {
         public static final ConfiguredMessageList<BaseComponent[]> DESCRIPTION = list()
                 .defaults(
                         "&fYou are editing description for residence &e%(residence)&f, please enter in chat.",
-                        "&fRemember that you can use '&e\\n&f' to wrap lines.",
+                        "&fRemember that you can use '&e\\\\n&f' to wrap lines.",
                         "&fYou can enter '&e#cancel&f' to cancel this operation."
                 ).params("residence").build();
 
