@@ -16,9 +16,9 @@ README LANGUAGES [ [**English**](README.md) | [中文](README_CN.md)  ]
 
 > Great **"Residence"** all **listed** !
 
-![LOGO](.doc/logo.png)
-
 List existing residence in server in a gui, and allow players to manage, teleport, and comment.
+
+<img src=".doc/logo.png" width="300px"  height="300px" alt="Project logo" align="right">
 
 ## Features & Advantages
 
