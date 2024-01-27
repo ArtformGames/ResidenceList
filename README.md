@@ -118,5 +118,8 @@ The source code of this project adopts the [GNU General Public License v3.0](htt
 
 This project is mainly developed by the [Artfrom Games](https://github.com/ArtformGames/) .
 
+<img src="https://raw.githubusercontent.com/ArtformGames/.github/master/logo/1000pxh/COMPLETE_Reverse_Color.png" width="50%"  height="50%" alt="ArtformGames Logo">
+
 Many thanks to Jetbrains for kindly providing a license for us to work on this and other open-source projects.  
+
 [![](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)](https://www.jetbrains.com/?from=https://github.com/ArtformGames/ResidenceList)
