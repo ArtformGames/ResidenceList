@@ -96,7 +96,20 @@ public class ResidenceListUI extends AutoPagedGUI {
             case RATINGS -> CONFIG.ITEMS.SORT_BY_RATINGS;
         };
 
-        setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))));
+        setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (type.isRightClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortReversed(!getPlayerData().isSortReversed());
+                    open(clicker, owner);
+                } else if (type.isLeftClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortFunction(getPlayerData().getSortFunction().next());
+                    open(clicker, owner);
+                }
+            }
+        });
     }
 
     @Override
@@ -106,6 +119,7 @@ public class ResidenceListUI extends AutoPagedGUI {
     }
 
     public void loadResidences() {
+        this.container.clear();
         UserListData data = getPlayerData();
         List<ClaimedResidence> display = new ArrayList<>();
 

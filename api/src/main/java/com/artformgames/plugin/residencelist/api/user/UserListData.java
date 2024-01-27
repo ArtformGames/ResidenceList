@@ -23,7 +23,9 @@ public interface UserListData {
 
     boolean isSortReversed();
 
-    void setSortFunction(SortFunctions function, boolean reverse);
+    void setSortFunction(SortFunctions function);
+
+    void setSortReversed(boolean reversed);
 
 
 }

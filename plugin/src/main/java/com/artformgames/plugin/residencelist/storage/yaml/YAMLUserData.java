@@ -57,9 +57,13 @@ public class YAMLUserData extends UserData<UUID> implements UserListData {
     }
 
     @Override
-    public void setSortFunction(SortFunctions function, boolean reverse) {
+    public void setSortFunction(@NotNull SortFunctions function) {
         this.sortFunction = function;
-        this.reversed = reverse;
+    }
+
+    @Override
+    public void setSortReversed(boolean reversed) {
+        this.reversed = reversed;
     }
 
     @Override
