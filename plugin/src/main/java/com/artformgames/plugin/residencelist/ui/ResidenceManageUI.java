@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.ConfigurationRoot;
+import cc.carm.lib.configuration.core.Configuration;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
@@ -240,19 +240,19 @@ public class ResidenceManageUI extends AutoPagedGUI {
         };
     }
 
-    public static final class CONFIG extends ConfigurationRoot {
+    public interface CONFIG extends Configuration {
 
-        public static final ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
                 .defaults("&a&lDetails &7#&f%(name)")
                 .params("name").build();
 
-        public static final class ITEMS extends ConfigurationRoot {
+        interface ITEMS extends Configuration {
 
-            public static final ConfiguredItem BACK = ConfiguredItem.create()
+            ConfiguredItem BACK = ConfiguredItem.create()
                     .defaultType(Material.REDSTONE_TORCH)
                     .defaultName("&cBack").build();
 
-            public static final ConfiguredItem TELEPORT = ConfiguredItem.create()
+            ConfiguredItem TELEPORT = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
                     .defaultName("&d&lTeleport")
                     .defaultLore(
@@ -264,7 +264,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             "&a ▶ RClick &8|&f Set current location for teleportation."
                     ).params("world", "x", "y", "z").build();
 
-            public static final ConfiguredItem INFORMATION = ConfiguredItem.create()
+            ConfiguredItem INFORMATION = ConfiguredItem.create()
                     .defaultType(Material.OAK_SIGN)
                     .defaultName("&e&lEdit information")
                     .defaultLore(
@@ -274,7 +274,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             "&a ▶ Middle &8|&f Edit residence's icon"
                     ).build();
 
-            public static final ConfiguredItem PUBLIC = ConfiguredItem.create()
+            ConfiguredItem PUBLIC = ConfiguredItem.create()
                     .defaultType(Material.LIME_DYE)
                     .defaultName("&7Current: &a&lPublic")
                     .defaultLore(
@@ -284,7 +284,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             "&a ▶ Click &8|&f Change to &c&lPrivate"
                     ).build();
 
-            public static final ConfiguredItem PRIVATE = ConfiguredItem.create()
+            ConfiguredItem PRIVATE = ConfiguredItem.create()
                     .defaultType(Material.GRAY_DYE)
                     .defaultName("&7Current: &c&lPrivate")
                     .defaultLore(
@@ -296,7 +296,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     ).build();
 
 
-            public static final ConfiguredItem EMPTY = ConfiguredItem.create()
+            ConfiguredItem EMPTY = ConfiguredItem.create()
                     .defaultType(Material.BARRIER)
                     .defaultName("&7Empty")
                     .defaultLore(
@@ -305,13 +305,13 @@ public class ResidenceManageUI extends AutoPagedGUI {
 
         }
 
-        public static final class ADDITIONAL_LORE extends ConfigurationRoot {
+        interface ADDITIONAL_LORE extends Configuration {
 
-            public static final ConfiguredMessageList<String> CLICK = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessageList<String> CLICK = ConfiguredMessageList.asStrings().defaults(
                     "&a ▶ LClick &8|&f Pin/Unpin residence"
             ).build();
 
-            public static final ConfiguredMessageList<String> REMOVE = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessageList<String> REMOVE = ConfiguredMessageList.asStrings().defaults(
                     "&a ▶ LClick &8|&f Delete this comment &c(ADMIN)"
             ).build();
 

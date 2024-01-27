@@ -3,6 +3,7 @@ package com.artformgames.plugin.residencelist.manager;
 import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.user.UserDataManager;
 import com.artformgames.plugin.residencelist.api.UserManager;
+import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
 import com.artformgames.plugin.residencelist.storage.yaml.YAMLUserData;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +32,7 @@ public class UserStorageManager extends UserDataManager<UUID, YAMLUserData> impl
 
     @Override
     public @NotNull YAMLUserData emptyUser(@NotNull UUID key) {
-        return new YAMLUserData(key, new ArrayList<>());
+        return new YAMLUserData(key, new ArrayList<>(), SortFunctions.NAME, false);
     }
 
     @Override
@@ -39,7 +40,11 @@ public class UserStorageManager extends UserDataManager<UUID, YAMLUserData> impl
         File userFile = new File(this.folder, key + ".yaml");
         if (userFile.exists()) {
             YamlConfiguration conf = YamlConfiguration.loadConfiguration(userFile);
-            return new YAMLUserData(key, new ArrayList<>(conf.getStringList("pinned")));
+            return new YAMLUserData(
+                    key, new ArrayList<>(conf.getStringList("pinned")),
+                    SortFunctions.parse(conf.getInt("sort", 0)),
+                    conf.getBoolean("reversed", false)
+            );
         }
         return null;
     }
@@ -57,6 +62,10 @@ public class UserStorageManager extends UserDataManager<UUID, YAMLUserData> impl
         }
 
         conf.set("pinned", data.getPinned());
+        if (data.getSortFunction() != SortFunctions.NAME) {
+            conf.set("sort", data.getSortFunction().ordinal());
+        }
+        if (data.isSortReversed()) conf.set("reversed", true);
         conf.save(userFile);
     }
 }

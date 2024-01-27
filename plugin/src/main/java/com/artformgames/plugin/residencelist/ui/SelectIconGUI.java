@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.ConfigurationRoot;
+import cc.carm.lib.configuration.core.Configuration;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
@@ -49,15 +49,15 @@ public class SelectIconGUI extends GUI {
         Main.getInstance().getScheduler().run(() -> callback.accept(player, clickedItem));
     }
 
-    public static final class CONFIG extends ConfigurationRoot {
+    public interface CONFIG extends Configuration {
 
-        public static final ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
                 .defaults("&a&lPlease select icon")
                 .build();
 
-        public static final class ITEMS extends ConfigurationRoot {
+        interface ITEMS extends Configuration {
 
-            public static final ConfiguredItem SELECT = ConfiguredItem.create()
+            ConfiguredItem SELECT = ConfiguredItem.create()
                     .defaultType(Material.LIME_DYE)
                     .defaultName("&7Click items in backpack")
                     .defaultLore(
