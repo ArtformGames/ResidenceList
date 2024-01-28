@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 public class ResidenceAdminUI extends AutoPagedGUI {
@@ -87,6 +88,27 @@ public class ResidenceAdminUI extends AutoPagedGUI {
                 }
             });
         }
+
+        ConfiguredItem sortItem = switch (getPlayerData().getSortFunction()) {
+            case NAME -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_NAME;
+            case SIZE -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_SIZE;
+            case RATINGS -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_RATINGS;
+        };
+
+        setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (type.isRightClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortReversed(!getPlayerData().isSortReversed());
+                    open(clicker, owner);
+                } else if (type.isLeftClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortFunction(getPlayerData().getSortFunction().next());
+                    open(clicker, owner);
+                }
+            }
+        });
     }
 
     @Override
@@ -97,7 +119,10 @@ public class ResidenceAdminUI extends AutoPagedGUI {
 
     public void loadResidences() {
         UserListData data = getPlayerData();
-        ResidenceListAPI.listResidences().stream().filter(this::checkOwner).forEach(residence -> addItem(generateIcon(residence)));
+        Comparator<ClaimedResidence> comparator = data.getSortFunction().residenceComparator(data.isSortReversed());
+        ResidenceListAPI.listResidences().stream()
+                .filter(this::checkOwner).sorted(comparator)
+                .forEach(residence -> addItem(generateIcon(residence)));
     }
 
     protected GUIItem generateIcon(ClaimedResidence residence) {

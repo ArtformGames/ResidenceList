@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -123,16 +124,17 @@ public class ResidenceListUI extends AutoPagedGUI {
         UserListData data = getPlayerData();
         List<ClaimedResidence> display = new ArrayList<>();
 
+        Comparator<ClaimedResidence> comparator = data.getSortFunction().residenceComparator(data.isSortReversed());
+
         data.getPinned().stream()
                 .map(ResidenceListAPI::getResidence)
                 .filter(residence -> residence != null && checkOwner(residence))
-                .forEach(display::add);
-
+                .sorted(comparator).forEach(display::add);
         ResidenceListAPI.listResidences().stream()
                 .filter(residence -> !display.contains(residence) && checkOwner(residence))
-                .forEach(display::add);
+                .sorted(comparator).forEach(display::add);
 
-        display.stream().sorted(data.getSortFunction().residenceComparator(data.isSortReversed())).filter(r -> {
+        display.stream().filter(r -> {
             ResidenceData d = Main.getInstance().getResidenceManager().getData(r);
             return d.isPublicDisplayed() || (d.isOwner(getViewer()));
         }).forEach(residence -> addItem(generateIcon(data, residence)));
@@ -251,7 +253,7 @@ public class ResidenceListUI extends AutoPagedGUI {
                             "&fSort order: %(order)",
                             "&fSort functions:",
                             "&7     &fRATINGS",
-                            "&7     &2&lNAME",
+                            "&7     &fNAME",
                             "&7  &a➥ &d&lSIZE",
                             " ",
                             "&a ▶ LClick &8|&f Switch sort function",
