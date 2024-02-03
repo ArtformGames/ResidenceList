@@ -91,11 +91,13 @@ You should install it before using placeholders in game.
 
 ## Configurations
 
-### Plugin Configuration ([`config.yml`]())
+You can find configuration translations at [ResidenceList-Translations](https://github.com/ArtformGames/ResidenceList-Translations).
+
+### Plugin Configuration (`config.yml`)
 
 Will be generated on the first boot up.
 
-### Messages Configuration ([`messages.yml`]())
+### Messages Configuration (`messages.yml`)
 
 Will be generated on the first boot up.
 
