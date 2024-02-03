@@ -3,7 +3,7 @@ package com.artformgames.plugin.residencelist.storage.yaml;
 import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.user.UserDataManager;
 import com.artformgames.plugin.residencelist.Main;
-import com.artformgames.plugin.residencelist.api.storage.DataStorage;
+import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
 import com.artformgames.plugin.residencelist.storage.yaml.data.YAMLResidenceData;

@@ -3,7 +3,7 @@ package com.artformgames.plugin.residencelist;
 import com.artformgames.plugin.residencelist.api.ResidenceManager;
 import com.artformgames.plugin.residencelist.api.UserManager;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
-import com.artformgames.plugin.residencelist.api.storage.DataStorage;
+import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.entity.Player;

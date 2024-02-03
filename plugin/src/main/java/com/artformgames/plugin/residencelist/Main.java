@@ -4,7 +4,7 @@ import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.i18n.EasyPluginMessageProvider;
 import cc.carm.lib.mineconfiguration.bukkit.MineConfiguration;
-import com.artformgames.plugin.residencelist.api.storage.DataStorage;
+import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
