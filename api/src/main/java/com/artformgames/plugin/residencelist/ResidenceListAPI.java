@@ -3,6 +3,7 @@ package com.artformgames.plugin.residencelist;
 import com.artformgames.plugin.residencelist.api.ResidenceManager;
 import com.artformgames.plugin.residencelist.api.UserManager;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
+import com.artformgames.plugin.residencelist.api.storage.DataStorage;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.entity.Player;
@@ -30,7 +31,7 @@ public class ResidenceListAPI {
     }
 
     public static @NotNull ResidenceData getResidenceData(@NotNull ClaimedResidence residence) {
-        return getResidenceManager().getData(residence);
+        return getResidenceManager().getResidence(residence);
     }
 
     public static @Nullable ClaimedResidence getResidence(@NotNull String name) {
@@ -47,11 +48,15 @@ public class ResidenceListAPI {
         return Set.copyOf(getResidences().values());
     }
 
-    public static ResidenceManager getResidenceManager() {
+    public static DataStorage<?, ?> getStorage() {
+        return plugin.getStorage();
+    }
+
+    public static ResidenceManager<?> getResidenceManager() {
         return plugin.getResidenceManager();
     }
 
-    public static UserManager getUserManager() {
+    public static UserManager<?> getUserManager() {
         return plugin.getUserManager();
     }
 

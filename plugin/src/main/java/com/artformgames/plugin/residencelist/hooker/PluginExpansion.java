@@ -16,7 +16,7 @@ public class PluginExpansion extends EasyPlaceholder {
         handle("name", (player, args) -> {
             if (args.length < 1) return "WRONG_ARGS";
 
-            ResidenceData data = ResidenceListAPI.getResidenceManager().getData(args[0]);
+            ResidenceData data = ResidenceListAPI.getResidenceManager().getResidence(args[0]);
             if (data == null) return "WRONG_NAME";
 
             return data.getDisplayName();
@@ -25,7 +25,7 @@ public class PluginExpansion extends EasyPlaceholder {
         handle("status", (player, args) -> {
             if (args.length < 1) return "WRONG_ARGS";
 
-            ResidenceData data = ResidenceListAPI.getResidenceManager().getData(args[0]);
+            ResidenceData data = ResidenceListAPI.getResidenceManager().getResidence(args[0]);
             if (data == null) return "WRONG_NAME";
 
             return data.isPublicDisplayed();

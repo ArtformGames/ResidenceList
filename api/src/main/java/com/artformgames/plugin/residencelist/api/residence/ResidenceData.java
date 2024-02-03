@@ -112,7 +112,7 @@ public interface ResidenceData {
     void save() throws Exception;
 
     default void modify(Consumer<ResidenceData> modifier) {
-        ResidenceListAPI.getResidenceManager().updateData(this, modifier);
+        ResidenceListAPI.getResidenceManager().updateResidence(this, modifier);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.artformgames.plugin.residencelist.storage.yaml;
+package com.artformgames.plugin.residencelist.storage.yaml.data;
 
 import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;

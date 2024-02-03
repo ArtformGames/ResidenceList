@@ -10,23 +10,29 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public interface ResidenceManager {
+public interface ResidenceManager<D extends ResidenceData> {
 
     @Unmodifiable
-    @NotNull Set<ResidenceData> listData();
+    @NotNull Set<D> listResidences();
 
-    @Nullable ResidenceData getData(@NotNull String name);
+    @Nullable D getResidence(@NotNull String name);
 
-    default @NotNull ResidenceData getData(@NotNull ClaimedResidence residence) {
-        return Objects.requireNonNull(getData(residence.getName()));
+    default @NotNull D getResidence(@NotNull ClaimedResidence residence) {
+        return Objects.requireNonNull(getResidence(residence.getName()));
     }
 
-    boolean updateData(@NotNull ResidenceData data, @NotNull Consumer<ResidenceData> dataConsumer);
+    @NotNull D loadResidence(String residenceName) throws Exception;
 
-    default boolean updateData(@NotNull String name, @NotNull Consumer<ResidenceData> dataConsumer) {
-        ResidenceData data = getData(name);
+    void renameResidence(String oldName, String newName);
+
+    boolean updateResidence(@NotNull ResidenceData data, @NotNull Consumer<ResidenceData> dataConsumer);
+
+    default boolean updateResidence(@NotNull String name, @NotNull Consumer<ResidenceData> dataConsumer) {
+        ResidenceData data = getResidence(name);
         if (data == null) return false;
-        return updateData(data, dataConsumer);
+        return updateResidence(data, dataConsumer);
     }
+
+    void saveAllResidences();
 
 }

@@ -135,13 +135,13 @@ public class ResidenceListUI extends AutoPagedGUI {
                 .sorted(comparator).forEach(display::add);
 
         display.stream().filter(r -> {
-            ResidenceData d = Main.getInstance().getResidenceManager().getData(r);
+            ResidenceData d = Main.getInstance().getResidenceManager().getResidence(r);
             return d.isPublicDisplayed() || (d.isOwner(getViewer()));
         }).forEach(residence -> addItem(generateIcon(data, residence)));
     }
 
     protected GUIItem generateIcon(UserListData userData, ClaimedResidence residence) {
-        ResidenceData data = Main.getInstance().getResidenceManager().getData(residence);
+        ResidenceData data = Main.getInstance().getResidenceManager().getResidence(residence);
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 data.getDisplayName(), data.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),

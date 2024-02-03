@@ -167,7 +167,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
     }
 
     protected GUIItem generateIcon(UserListData userData, ClaimedResidence residence) {
-        ResidenceData residenceData = Main.getInstance().getResidenceManager().getData(residence);
+        ResidenceData residenceData = Main.getInstance().getResidenceManager().getResidence(residence);
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 data.getDisplayName(), data.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),

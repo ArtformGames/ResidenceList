@@ -1,4 +1,4 @@
-package com.artformgames.plugin.residencelist.storage.yaml;
+package com.artformgames.plugin.residencelist.storage.yaml.data;
 
 import cc.carm.lib.easyplugin.user.UserData;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;

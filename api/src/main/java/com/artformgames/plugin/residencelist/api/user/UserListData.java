@@ -27,5 +27,8 @@ public interface UserListData {
 
     void setSortReversed(boolean reversed);
 
+    default boolean isEmpty() {
+        return getPinned().isEmpty() && getSortFunction() == SortFunctions.NAME && !isSortReversed();
+    }
 
 }

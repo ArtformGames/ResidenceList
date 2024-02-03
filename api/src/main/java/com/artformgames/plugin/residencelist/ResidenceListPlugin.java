@@ -1,5 +1,6 @@
 package com.artformgames.plugin.residencelist;
 
+import com.artformgames.plugin.residencelist.api.storage.DataStorage;
 import com.artformgames.plugin.residencelist.api.ResidenceManager;
 import com.artformgames.plugin.residencelist.api.UserManager;
 import org.bukkit.entity.Player;
@@ -10,8 +11,16 @@ interface ResidenceListPlugin {
 
     void openGUI(@NotNull Player player, @Nullable String owner);
 
-    @NotNull ResidenceManager getResidenceManager();
+    @NotNull DataStorage<?, ?> getStorage();
 
-    @NotNull UserManager getUserManager();
+    void setStorage(DataStorage<?, ?> storage);
+
+    default @NotNull ResidenceManager<?> getResidenceManager() {
+        return getStorage();
+    }
+
+    default @NotNull UserManager<?> getUserManager() {
+        return getStorage();
+    }
 
 }

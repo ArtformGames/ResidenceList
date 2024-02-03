@@ -4,6 +4,7 @@ import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.i18n.EasyPluginMessageProvider;
 import cc.carm.lib.mineconfiguration.bukkit.MineConfiguration;
+import com.artformgames.plugin.residencelist.api.storage.DataStorage;
 import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
@@ -12,8 +13,7 @@ import com.artformgames.plugin.residencelist.hooker.PluginExpansion;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.listener.ResidenceListener;
 import com.artformgames.plugin.residencelist.listener.UserListener;
-import com.artformgames.plugin.residencelist.manager.ResidenceManagerImpl;
-import com.artformgames.plugin.residencelist.manager.UserStorageManager;
+import com.artformgames.plugin.residencelist.storage.yaml.YAMLStorage;
 import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
 import com.artformgames.plugin.residencelist.utils.GHUpdateChecker;
 import org.bstats.bukkit.Metrics;
@@ -33,8 +33,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
     }
 
     protected MineConfiguration configuration;
-    protected ResidenceManagerImpl residenceManager;
-    protected UserStorageManager userManager;
+    protected DataStorage<?, ?> storage;
 
 
     @Override
@@ -45,24 +44,15 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         this.configuration.initializeConfig(PluginConfig.class);
         this.configuration.initializeMessage(PluginMessages.class);
 
-        log("Initialize users manager...");
-        this.userManager = new UserStorageManager(this);
-
-        log("Initialize residence manager...");
-        this.residenceManager = new ResidenceManagerImpl(this);
+        log("Initialize data storage..."); // Supporting custom storages.
+        this.storage = this.storage == null ? new YAMLStorage(this) : this.storage;
 
     }
 
     @Override
     protected boolean initialize() {
-        log("Loading all residence data...");
-        int loaded = this.residenceManager.loadAllResidences();
-        log("Successfully loaded " + loaded + " residence data.");
-
-        if (!Bukkit.getOnlinePlayers().isEmpty()) {
-            log("Load online users' data...");
-            getUserManager().loadOnline(Player::getUniqueId);
-        }
+        log("Loading storage data...");
+        this.storage.initialize();
 
         log("Register listeners...");
         GUI.initialize(this);
@@ -100,11 +90,8 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
     protected void shutdown() {
         GUI.closeAll();
 
-        log("Saving all users' data...");
-        this.userManager.saveAll();
-
-        log("Saving all residence data...");
-        this.residenceManager.saveAll();
+        log("Saving all data to storage...");
+        this.storage.shutdown();
 
     }
 
@@ -138,13 +125,15 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         ResidenceListUI.open(player, owner);
     }
 
+    @NotNull
     @Override
-    public @NotNull ResidenceManagerImpl getResidenceManager() {
-        return residenceManager;
+    public DataStorage<?, ?> getStorage() {
+        return storage;
     }
 
     @Override
-    public @NotNull UserStorageManager getUserManager() {
-        return userManager;
+    public void setStorage(DataStorage<?, ?> storage) {
+        this.storage = storage;
     }
+
 }
