@@ -146,4 +146,4 @@ README LANGUAGES [ [English](README.md) | [**中文**](README_CN.md)  ]
 
 十分感谢 JetBrains 为本项目开发提供IDE及其对开源项目的大力支持。
 
-[![](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)](https://www.jetbrains.com/?from=https://github.com/ArtformGames/VotePass)
+[![](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)](https://www.jetbrains.com/?from=https://github.com/ArtformGames/ResidenceList)
