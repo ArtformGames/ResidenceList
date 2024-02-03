@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.ConfigurationRoot;
+import cc.carm.lib.configuration.core.Configuration;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 public class ResidenceAdminUI extends AutoPagedGUI {
@@ -87,6 +88,27 @@ public class ResidenceAdminUI extends AutoPagedGUI {
                 }
             });
         }
+
+        ConfiguredItem sortItem = switch (getPlayerData().getSortFunction()) {
+            case NAME -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_NAME;
+            case SIZE -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_SIZE;
+            case RATINGS -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_RATINGS;
+        };
+
+        setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (type.isRightClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortReversed(!getPlayerData().isSortReversed());
+                    open(clicker, owner);
+                } else if (type.isLeftClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortFunction(getPlayerData().getSortFunction().next());
+                    open(clicker, owner);
+                }
+            }
+        });
     }
 
     @Override
@@ -97,7 +119,10 @@ public class ResidenceAdminUI extends AutoPagedGUI {
 
     public void loadResidences() {
         UserListData data = getPlayerData();
-        ResidenceListAPI.listResidences().stream().filter(this::checkOwner).forEach(residence -> addItem(generateIcon(residence)));
+        Comparator<ClaimedResidence> comparator = data.getSortFunction().residenceComparator(data.isSortReversed());
+        ResidenceListAPI.listResidences().stream()
+                .filter(this::checkOwner).sorted(comparator)
+                .forEach(residence -> addItem(generateIcon(residence)));
     }
 
     protected GUIItem generateIcon(ClaimedResidence residence) {
@@ -135,25 +160,25 @@ public class ResidenceAdminUI extends AutoPagedGUI {
     }
 
 
-    public static final class CONFIG extends ConfigurationRoot {
+    public interface CONFIG extends Configuration {
 
-        public static final ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&lResidence list &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&lResidence list &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
 
 
-        public static final class ITEMS extends ConfigurationRoot {
+        interface ITEMS extends Configuration {
 
-            public static final ConfiguredItem ALL = ConfiguredItem.create().defaultType(Material.CHEST).defaultName("&a&lAll residences").defaultLore("&7", "&7Now all residences are displayed.", "&7", "&a ▶ Click &8|&f See only personal residences").build();
-            public static final ConfiguredItem OWNED = ConfiguredItem.create().defaultType(Material.PLAYER_HEAD).defaultName("&7Residence owned by &f%(owner)").defaultLore("&7", "&a ▶ Click &8|&f See all residences").params("owner").build();
+            ConfiguredItem ALL = ConfiguredItem.create().defaultType(Material.CHEST).defaultName("&a&lAll residences").defaultLore("&7", "&7Now all residences are displayed.", "&7", "&a ▶ Click &8|&f See only personal residences").build();
+            ConfiguredItem OWNED = ConfiguredItem.create().defaultType(Material.PLAYER_HEAD).defaultName("&7Residence owned by &f%(owner)").defaultLore("&7", "&a ▶ Click &8|&f See all residences").params("owner").build();
 
         }
 
-        public static final class ADDITIONAL_LORE extends ConfigurationRoot {
+        interface ADDITIONAL_LORE extends Configuration {
 
-            public static final ConfiguredMessageList<String> NORMAL = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessageList<String> NORMAL = ConfiguredMessageList.asStrings().defaults(
                     "&a ▶ Click &8|&f View information"
             ).build();
 
-            public static final ConfiguredMessageList<String> TELEPORTABLE = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessageList<String> TELEPORTABLE = ConfiguredMessageList.asStrings().defaults(
                     "&a ▶ LClick &8|&f View information",
                     "&a ▶ RClick &8|&f Teleport to residence"
             ).build();

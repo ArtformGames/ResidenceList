@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.conf;
 
-import cc.carm.lib.configuration.core.ConfigurationRoot;
+import cc.carm.lib.configuration.core.Configuration;
 import cc.carm.lib.configuration.core.annotation.HeaderComment;
 import cc.carm.lib.configuration.core.value.type.ConfiguredList;
 import cc.carm.lib.configuration.core.value.type.ConfiguredValue;
@@ -14,11 +14,11 @@ import org.bukkit.Sound;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-public class PluginConfig extends ConfigurationRoot {
+public interface PluginConfig extends Configuration {
 
-    public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static final ConfiguredValue<Boolean> DEBUG = ConfiguredValue.of(Boolean.class, false);
+    ConfiguredValue<Boolean> DEBUG = ConfiguredValue.of(Boolean.class, false);
 
     @HeaderComment({
             "Statistics Settings",
@@ -26,7 +26,7 @@ public class PluginConfig extends ConfigurationRoot {
             "Of course, you can also choose to turn it off here for this plugin,",
             "or turn it off for all plugins in the configuration file under \"plugins/bStats\"."
     })
-    public static final ConfiguredValue<Boolean> METRICS = ConfiguredValue.of(Boolean.class, true);
+    ConfiguredValue<Boolean> METRICS = ConfiguredValue.of(Boolean.class, true);
 
     @HeaderComment({
             "Check update settings",
@@ -34,26 +34,26 @@ public class PluginConfig extends ConfigurationRoot {
             "If you do not want the plug-in to check for updates and prompt you, you can choose to close.",
             "Checking for updates is an asynchronous operation that will never affect performance and user experience."
     })
-    public static final ConfiguredValue<Boolean> CHECK_UPDATE = ConfiguredValue.of(Boolean.class, true);
+    ConfiguredValue<Boolean> CHECK_UPDATE = ConfiguredValue.of(Boolean.class, true);
 
 
-    public static final class SETTINGS extends ConfigurationRoot {
+    interface SETTINGS extends Configuration {
 
         @HeaderComment("Default residence status (Public / Private)")
-        public static final ConfiguredValue<Boolean> DEFAULT_STATUS = ConfiguredValue.of(Boolean.class, true);
+        ConfiguredValue<Boolean> DEFAULT_STATUS = ConfiguredValue.of(Boolean.class, true);
 
-        public static final ConfiguredValue<Integer> LETTERS_PRE_LINE = ConfiguredValue.of(Integer.class, 35);
+        ConfiguredValue<Integer> LETTERS_PRE_LINE = ConfiguredValue.of(Integer.class, 35);
 
-        public static final ConfiguredList<Material> BLOCKED_ICON_TYPES = ConfiguredList.builderOf(Material.class).fromString()
+        ConfiguredList<Material> BLOCKED_ICON_TYPES = ConfiguredList.builderOf(Material.class).fromString()
                 .parseValue(s -> Objects.requireNonNull(XMaterial.matchXMaterial(s).orElseThrow().parseMaterial()))
                 .serializeValue(d -> XMaterial.matchXMaterial(d).name())
                 .defaults(Material.CHEST, Material.CHAIN, Material.REDSTONE).build();
 
     }
 
-    public static final class ICON extends ConfigurationRoot {
+    interface ICON extends Configuration {
 
-        public static final ConfiguredItem INFO = ConfiguredItem.create()
+        ConfiguredItem INFO = ConfiguredItem.create()
                 .defaultType(Material.GRASS_BLOCK)
                 .defaultName("&7# &f%(name)")
                 .defaultLore(
@@ -66,9 +66,9 @@ public class PluginConfig extends ConfigurationRoot {
                 ).params("name", "owner", "members", "size", "likes", "dislikes")
                 .build();
 
-        public static final class RATE extends ConfigurationRoot {
+        interface RATE extends Configuration {
 
-            public static final ConfiguredItem LIKE = ConfiguredItem.create()
+            ConfiguredItem LIKE = ConfiguredItem.create()
                     .defaultType(Material.PLAYER_HEAD)
                     .defaultName("&7From &f%(owner)")
                     .defaultLore(
@@ -78,7 +78,7 @@ public class PluginConfig extends ConfigurationRoot {
                             "#click-lore#{1,0}"
                     ).params("owner", "date").build();
 
-            public static final ConfiguredItem DISLIKE = ConfiguredItem.create()
+            ConfiguredItem DISLIKE = ConfiguredItem.create()
                     .defaultType(Material.PLAYER_HEAD)
                     .defaultName("&7From &f%(owner)")
                     .defaultLore(
@@ -92,14 +92,14 @@ public class PluginConfig extends ConfigurationRoot {
         }
 
 
-        public static final ConfiguredItem EMPTY = ConfiguredItem.create()
+        ConfiguredItem EMPTY = ConfiguredItem.create()
                 .defaultType(Material.BLACK_STAINED_GLASS_PANE)
                 .defaultName("&7  ").build();
 
 
-        public static final class PAGE extends ConfigurationRoot {
+        interface PAGE extends Configuration {
 
-            public static final ConfiguredItem PREVIOUS_PAGE = ConfiguredItem.create()
+            ConfiguredItem PREVIOUS_PAGE = ConfiguredItem.create()
                     .defaults(Material.ARROW, "&fPrevious page")
                     .defaultLore(
                             " ",
@@ -109,7 +109,7 @@ public class PluginConfig extends ConfigurationRoot {
                     .build();
 
 
-            public static final ConfiguredItem NO_PREVIOUS_PAGE = ConfiguredItem.create()
+            ConfiguredItem NO_PREVIOUS_PAGE = ConfiguredItem.create()
                     .defaults(Material.ARROW, "&fPrevious page")
                     .defaultLore(
                             " ",
@@ -117,7 +117,7 @@ public class PluginConfig extends ConfigurationRoot {
                             " ")
                     .build();
 
-            public static final ConfiguredItem NEXT_PAGE = ConfiguredItem.create()
+            ConfiguredItem NEXT_PAGE = ConfiguredItem.create()
                     .defaults(Material.ARROW, "&fNext page")
                     .defaultLore(
                             " ",
@@ -126,7 +126,7 @@ public class PluginConfig extends ConfigurationRoot {
                             " "
                     ).build();
 
-            public static final ConfiguredItem NO_NEXT_PAGE = ConfiguredItem.create()
+            ConfiguredItem NO_NEXT_PAGE = ConfiguredItem.create()
                     .defaults(Material.ARROW, "&fNext page")
                     .defaultLore(
                             " ",
@@ -138,16 +138,16 @@ public class PluginConfig extends ConfigurationRoot {
 
     }
 
-    public static final class GUI extends ConfigurationRoot {
+    interface GUI extends Configuration {
 
-        public static final ConfiguredSound OPEN_SOUND = ConfiguredSound.of(Sound.ENTITY_EXPERIENCE_ORB_PICKUP);
-        public static final ConfiguredSound CLICK_SOUND = ConfiguredSound.of(Sound.UI_BUTTON_CLICK);
+        ConfiguredSound OPEN_SOUND = ConfiguredSound.of(Sound.ENTITY_EXPERIENCE_ORB_PICKUP);
+        ConfiguredSound CLICK_SOUND = ConfiguredSound.of(Sound.UI_BUTTON_CLICK);
 
-        public static final Class<?> LIST = ResidenceListUI.CONFIG.class;
-        public static final Class<?> INFO = ResidenceInfoUI.CONFIG.class;
-        public static final Class<?> MANAGE = ResidenceManageUI.CONFIG.class;
-        public static final Class<?> ADMIN = ResidenceAdminUI.CONFIG.class;
-        public static final Class<?> SELECT = SelectIconGUI.CONFIG.class;
+        Class<?> LIST = ResidenceListUI.CONFIG.class;
+        Class<?> INFO = ResidenceInfoUI.CONFIG.class;
+        Class<?> MANAGE = ResidenceManageUI.CONFIG.class;
+        Class<?> ADMIN = ResidenceAdminUI.CONFIG.class;
+        Class<?> SELECT = SelectIconGUI.CONFIG.class;
 
     }
 

@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.ConfigurationRoot;
+import cc.carm.lib.configuration.core.Configuration;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
@@ -196,19 +196,19 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         };
     }
 
-    public static final class CONFIG extends ConfigurationRoot {
+    public interface CONFIG extends Configuration {
 
-        public static final ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
                 .defaults("&a&lDetails &7#&f%(name)")
                 .params("name").build();
 
-        public static final class ITEMS extends ConfigurationRoot {
+        interface ITEMS extends Configuration {
 
-            public static final ConfiguredItem BACK = ConfiguredItem.create()
+            ConfiguredItem BACK = ConfiguredItem.create()
                     .defaultType(Material.REDSTONE_TORCH)
                     .defaultName("&cBack").build();
 
-            public static final ConfiguredItem OWNER = ConfiguredItem.create()
+            ConfiguredItem OWNER = ConfiguredItem.create()
                     .defaultType(Material.PLAYER_HEAD)
                     .defaultName("&7Residence owned by &f%(owner)")
                     .defaultLore(
@@ -216,7 +216,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             "&a ▶ Click &8|&f See all his residences"
                     ).params("owner").build();
 
-            public static final ConfiguredItem TELEPORT_TO = ConfiguredItem.create()
+            ConfiguredItem TELEPORT_TO = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
                     .defaultName("&dTeleport to residence")
                     .defaultLore(
@@ -228,7 +228,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     ).params("world", "x", "y", "z").build();
 
 
-            public static final ConfiguredItem TELEPORT_DISABLED = ConfiguredItem.create()
+            ConfiguredItem TELEPORT_DISABLED = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
                     .defaultName("&d&mTeleport")
                     .defaultLore(
@@ -237,7 +237,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             ""
                     ).build();
 
-            public static final ConfiguredItem RATE = ConfiguredItem.create()
+            ConfiguredItem RATE = ConfiguredItem.create()
                     .defaultType(Material.WRITABLE_BOOK)
                     .defaultName("&eRate && Comment")
                     .defaultLore(
@@ -248,7 +248,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             "&a ▶ RClick &8|&f Dislike && comment."
                     ).build();
 
-            public static final ConfiguredItem RATED = ConfiguredItem.create()
+            ConfiguredItem RATED = ConfiguredItem.create()
                     .defaultType(Material.WRITTEN_BOOK)
                     .defaultName("&eRate && Comment")
                     .defaultLore(
@@ -263,7 +263,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             "&a ▶ RClick &8|&f Dislike && comment."
                     ).params("date").build();
 
-            public static final ConfiguredItem EMPTY = ConfiguredItem.create()
+            ConfiguredItem EMPTY = ConfiguredItem.create()
                     .defaultType(Material.BARRIER)
                     .defaultName("&7Empty")
                     .defaultLore(
@@ -272,9 +272,9 @@ public class ResidenceInfoUI extends AutoPagedGUI {
 
         }
 
-        public static final class ADDITIONAL_LORE extends ConfigurationRoot {
+        interface ADDITIONAL_LORE extends Configuration {
 
-            public static final ConfiguredMessageList<String> CLICK = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessageList<String> CLICK = ConfiguredMessageList.asStrings().defaults(
                     "&a ▶ Click &8|&f Pin/Unpin residence"
             ).build();
 

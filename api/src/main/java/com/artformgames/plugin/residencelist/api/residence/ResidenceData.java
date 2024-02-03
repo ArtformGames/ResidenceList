@@ -94,6 +94,10 @@ public interface ResidenceData {
         return (int) getRates().values().stream().filter(predicate).count();
     }
 
+    default double rateRatio(Predicate<ResidenceRate> predicate) {
+        return getRates().isEmpty() ? 0 : (double) countRate(predicate) / getRates().size();
+    }
+
     default boolean canTeleport(Player player) {
         return isOwner(player) || checkPermission(player, Flags.tp, true);
     }

@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.ConfigurationRoot;
+import cc.carm.lib.configuration.core.Configuration;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -89,6 +90,27 @@ public class ResidenceListUI extends AutoPagedGUI {
                 }
             });
         }
+
+        ConfiguredItem sortItem = switch (getPlayerData().getSortFunction()) {
+            case NAME -> CONFIG.ITEMS.SORT_BY_NAME;
+            case SIZE -> CONFIG.ITEMS.SORT_BY_SIZE;
+            case RATINGS -> CONFIG.ITEMS.SORT_BY_RATINGS;
+        };
+
+        setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (type.isRightClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortReversed(!getPlayerData().isSortReversed());
+                    open(clicker, owner);
+                } else if (type.isLeftClick()) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    getPlayerData().setSortFunction(getPlayerData().getSortFunction().next());
+                    open(clicker, owner);
+                }
+            }
+        });
     }
 
     @Override
@@ -98,12 +120,19 @@ public class ResidenceListUI extends AutoPagedGUI {
     }
 
     public void loadResidences() {
+        this.container.clear();
         UserListData data = getPlayerData();
         List<ClaimedResidence> display = new ArrayList<>();
 
-        data.getPinned().stream().map(ResidenceListAPI::getResidence).filter(residence -> residence != null && checkOwner(residence)).forEach(display::add);
+        Comparator<ClaimedResidence> comparator = data.getSortFunction().residenceComparator(data.isSortReversed());
 
-        ResidenceListAPI.listResidences().stream().filter(residence -> !display.contains(residence) && checkOwner(residence)).forEach(display::add);
+        data.getPinned().stream()
+                .map(ResidenceListAPI::getResidence)
+                .filter(residence -> residence != null && checkOwner(residence))
+                .sorted(comparator).forEach(display::add);
+        ResidenceListAPI.listResidences().stream()
+                .filter(residence -> !display.contains(residence) && checkOwner(residence))
+                .sorted(comparator).forEach(display::add);
 
         display.stream().filter(r -> {
             ResidenceData d = Main.getInstance().getResidenceManager().getData(r);
@@ -165,23 +194,85 @@ public class ResidenceListUI extends AutoPagedGUI {
     }
 
 
-    public static final class CONFIG extends ConfigurationRoot {
+    public interface CONFIG extends Configuration {
 
-        public static final ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&lResidence list &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&lResidence list &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
 
+        interface ITEMS extends Configuration {
 
-        public static final class ITEMS extends ConfigurationRoot {
+            ConfiguredItem ALL = ConfiguredItem.create()
+                    .defaultType(Material.CHEST)
+                    .defaultName("&a&lAll residences")
+                    .defaultLore(
+                            "&7", "&7Now all residences are displayed.",
+                            "&7",
+                            "&a ▶ Click &8|&f See only personal residences"
+                    ).build();
 
-            public static final ConfiguredItem ALL = ConfiguredItem.create().defaultType(Material.CHEST).defaultName("&a&lAll residences").defaultLore("&7", "&7Now all residences are displayed.", "&7", "&a ▶ Click &8|&f See only personal residences").build();
-            public static final ConfiguredItem OWNED = ConfiguredItem.create().defaultType(Material.PLAYER_HEAD).defaultName("&7Residence owned by &f%(owner)").defaultLore("&7", "&a ▶ Click &8|&f See all residences").params("owner").build();
+            ConfiguredItem OWNED = ConfiguredItem.create()
+                    .defaultType(Material.PLAYER_HEAD)
+                    .defaultName("&7Residence owned by &f%(owner)")
+                    .defaultLore("&7", "&a ▶ Click &8|&f See all residences")
+                    .params("owner").build();
+
+            ConfiguredItem SORT_BY_RATINGS = ConfiguredItem.create()
+                    .defaultType(Material.LADDER)
+                    .defaultName("&fSort by &e&lRATINGS %(order)")
+                    .defaultLore(
+                            "&7",
+                            "&fSort order: %(order)",
+                            "&fSort functions:",
+                            "&7 &a➥ &e&lRATINGS",
+                            "&7     &fNAME",
+                            "&7     &fSIZE",
+                            " ",
+                            "&a ▶ LClick &8|&f Switch sort function",
+                            "&a ▶ RClick &8|&f Toggle sort reverse"
+                    ).params("order").build();
+
+            ConfiguredItem SORT_BY_NAME = ConfiguredItem.create()
+                    .defaultType(Material.LADDER)
+                    .defaultName("&fSort by &2&lNAME %(order)")
+                    .defaultLore(
+                            "&7",
+                            "&fSort order: %(order)",
+                            "&fSort functions:",
+                            "&7     &fRATINGS",
+                            "&7 &a➥ &2&lNAME",
+                            "&7     &fSIZE",
+                            " ",
+                            "&a ▶ LClick &8|&f Switch sort function",
+                            "&a ▶ RClick &8|&f Toggle sort reverse"
+                    ).params("order").build();
+
+            ConfiguredItem SORT_BY_SIZE = ConfiguredItem.create()
+                    .defaultType(Material.LADDER)
+                    .defaultName("&fSort by &d&lSIZE %(order)")
+                    .defaultLore(
+                            "&7",
+                            "&fSort order: %(order)",
+                            "&fSort functions:",
+                            "&7     &fRATINGS",
+                            "&7     &fNAME",
+                            "&7  &a➥ &d&lSIZE",
+                            " ",
+                            "&a ▶ LClick &8|&f Switch sort function",
+                            "&a ▶ RClick &8|&f Toggle sort reverse"
+                    ).params("order").build();
 
         }
 
-        public static final class ADDITIONAL_LORE extends ConfigurationRoot {
+        interface ADDITIONAL_LORE extends Configuration {
 
-            public static final ConfiguredMessageList<String> NORMAL = ConfiguredMessageList.asStrings().defaults("&a ▶ Click &8|&f View information", "&a ▶ Drop &8|&f Pin/Unpin residence").build();
+            ConfiguredMessageList<String> NORMAL = ConfiguredMessageList.asStrings()
+                    .defaults("&a ▶ Click &8|&f View information", "&a ▶ Drop &8|&f Pin/Unpin residence")
+                    .build();
 
-            public static final ConfiguredMessageList<String> TELEPORTABLE = ConfiguredMessageList.asStrings().defaults("&a ▶ LClick &8|&f View information", "&a ▶ RClick &8|&f Teleport to residence", "&a ▶  Drop  &8|&f Pin/Unpin residence").build();
+            ConfiguredMessageList<String> TELEPORTABLE = ConfiguredMessageList.asStrings().defaults(
+                    "&a ▶ LClick &8|&f View information",
+                    "&a ▶ RClick &8|&f Teleport to residence",
+                    "&a ▶  Drop  &8|&f Pin/Unpin residence"
+            ).build();
 
         }
 
