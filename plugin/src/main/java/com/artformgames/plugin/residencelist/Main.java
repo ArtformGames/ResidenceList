@@ -4,7 +4,6 @@ import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.i18n.EasyPluginMessageProvider;
 import cc.carm.lib.mineconfiguration.bukkit.MineConfiguration;
-import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
@@ -13,6 +12,7 @@ import com.artformgames.plugin.residencelist.hooker.PluginExpansion;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.listener.ResidenceListener;
 import com.artformgames.plugin.residencelist.listener.UserListener;
+import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.artformgames.plugin.residencelist.storage.yaml.YAMLStorage;
 import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
 import com.artformgames.plugin.residencelist.utils.GHUpdateChecker;
@@ -44,13 +44,15 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         this.configuration.initializeConfig(PluginConfig.class);
         this.configuration.initializeMessage(PluginMessages.class);
 
-        log("Initialize data storage..."); // Supporting custom storages.
-        this.storage = this.storage == null ? new YAMLStorage(this) : this.storage;
-
     }
 
     @Override
     protected boolean initialize() {
+        if (this.storage == null) {
+            log("Initialize data storage..."); // Supporting custom storages.
+            this.storage = new YAMLStorage(this);
+        }
+
         log("Loading storage data...");
         this.storage.initialize();
 
