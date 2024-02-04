@@ -26,6 +26,10 @@ public class ResidenceListAPI {
     private ResidenceListAPI() {
     }
 
+    public static ResidenceListPlugin plugin() {
+        return plugin;
+    }
+
     public static void openGUI(Player player, @Nullable String owner) {
         plugin.openGUI(player, owner);
     }
@@ -50,6 +54,10 @@ public class ResidenceListAPI {
 
     public static DataStorage<?, ?> getStorage() {
         return plugin.getStorage();
+    }
+
+    public void setStorage(@NotNull DataStorage<?, ?> storage) {
+        plugin.setStorage(storage);
     }
 
     public static ResidenceManager<?> getResidenceManager() {
