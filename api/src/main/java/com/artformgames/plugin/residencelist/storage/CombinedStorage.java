@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public abstract class CombinedStorage<U extends UserListData, D extends ResidenceData> implements DataStorage<U, D> {
 
@@ -73,8 +74,8 @@ public abstract class CombinedStorage<U extends UserListData, D extends Residenc
     }
 
     @Override
-    public @NotNull CompletableFuture<U> load(@NotNull UUID key) {
-        return this.userManager.load(key);
+    public @NotNull CompletableFuture<U> load(@NotNull UUID key, @NotNull Supplier<Boolean> cacheCondition) {
+        return this.userManager.load(key, cacheCondition);
     }
 
     @Override

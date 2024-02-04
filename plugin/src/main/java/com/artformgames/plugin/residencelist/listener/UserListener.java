@@ -23,7 +23,7 @@ public class UserListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPreLogin(AsyncPlayerPreLoginEvent event) {
         if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) return;
-        getUserManager().load(event.getUniqueId()).join();
+        getUserManager().load(event.getUniqueId(), () -> true).join();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

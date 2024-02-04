@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public interface UserManager<U extends UserListData> {
 
@@ -25,7 +26,7 @@ public interface UserManager<U extends UserListData> {
 
     @NotNull Optional<@Nullable U> getOptional(@NotNull UUID key);
 
-    @NotNull CompletableFuture<U> load(@NotNull UUID key);
+    @NotNull CompletableFuture<U> load(@NotNull UUID key, @NotNull Supplier<Boolean> cacheCondition);
 
     CompletableFuture<Boolean> save(@NotNull U user);
 
