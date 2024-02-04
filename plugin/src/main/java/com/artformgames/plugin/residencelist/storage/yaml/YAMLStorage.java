@@ -59,11 +59,11 @@ public class YAMLStorage extends UserDataManager<UUID, YAMLUserData>
 
     protected File initializeFolder(File parent, String folderName) {
         File folder = new File(parent, folderName);
-        if (!this.userDataFolder.exists()) {
-            this.userDataFolder.mkdirs();
-        } else if (!this.userDataFolder.isDirectory()) {
-            this.userDataFolder.delete();
-            this.userDataFolder.mkdirs();
+        if (!folder.exists()) {
+            folder.mkdirs();
+        } else if (!folder.isDirectory()) {
+            folder.delete();
+            folder.mkdirs();
         }
         return folder;
     }
