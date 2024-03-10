@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -19,8 +20,8 @@ public abstract class CombinedStorage<U extends UserListData, D extends Residenc
     protected final @NotNull UserManager<U> userManager;
     protected final @NotNull ResidenceManager<D> residenceManager;
 
-    public CombinedStorage(@NotNull UserManager<U> userManager,
-                           @NotNull ResidenceManager<D> residenceManager) {
+    protected CombinedStorage(@NotNull UserManager<U> userManager,
+                              @NotNull ResidenceManager<D> residenceManager) {
         this.userManager = userManager;
         this.residenceManager = residenceManager;
     }
@@ -50,6 +51,21 @@ public abstract class CombinedStorage<U extends UserListData, D extends Residenc
     @Override
     public void renameResidence(String oldName, String newName) {
         this.residenceManager.renameResidence(oldName, newName);
+    }
+
+    @Override
+    public void removeResidence(@NotNull String name) {
+        this.residenceManager.removeResidence(name);
+    }
+
+    @Override
+    public @Nullable U getNullable(@NotNull UUID key) {
+        return null;
+    }
+
+    @Override
+    public @NotNull Optional<@Nullable U> getOptional(@NotNull UUID key) {
+        return Optional.empty();
     }
 
     @Override

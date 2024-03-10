@@ -176,7 +176,6 @@ public class YAMLStorage extends UserDataManager<UUID, YAMLUserData>
         YAMLResidenceData data = this.residences.remove(oldName);
         if (data == null) return; // No data for this residence yet.
 
-        this.residences.remove(oldName);
         this.residences.put(newName, data);
 
         File n = new File(this.residenceDataFolder, newName + ".yaml");
@@ -185,6 +184,20 @@ public class YAMLStorage extends UserDataManager<UUID, YAMLUserData>
             Main.debugging("Successfully renamed residence data for '" + oldName + "' to '" + newName + "' !");
         } catch (Exception e) {
             Main.severe("Error occurred when renaming residence data for '" + oldName + "' to '" + newName + "' !");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void removeResidence(@NotNull String name) {
+        YAMLResidenceData data = this.residences.remove(name);
+        if (data == null) return; // No data for this residence yet.
+
+        try {
+            data.delete();
+            Main.debugging("Successfully removed residence data for '" + name + "' !");
+        } catch (Exception e) {
+            Main.severe("Error occurred when removing residence data for '" + name + "' !");
             e.printStackTrace();
         }
     }

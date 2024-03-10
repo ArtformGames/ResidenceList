@@ -25,6 +25,8 @@ public interface ResidenceManager<D extends ResidenceData> {
 
     void renameResidence(String oldName, String newName);
 
+    void removeResidence(@NotNull String name);
+
     boolean updateResidence(@NotNull ResidenceData data, @NotNull Consumer<ResidenceData> dataConsumer);
 
     default boolean updateResidence(@NotNull String name, @NotNull Consumer<ResidenceData> dataConsumer) {

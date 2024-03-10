@@ -126,6 +126,10 @@ public class YAMLResidenceData implements ResidenceData {
         save();
     }
 
+    public boolean delete() throws Exception {
+        return this.file.exists() && this.file.delete();
+    }
+
     public void save() throws Exception {
         if (!this.file.exists()) {
             this.file.createNewFile();
