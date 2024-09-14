@@ -6,6 +6,7 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -20,13 +21,17 @@ import java.util.Set;
 
 public class ResidenceListAPI {
 
-    protected static ResidenceListPlugin plugin;
+    public static ResidenceListPlugin plugin;
+
     protected static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private ResidenceListAPI() {
     }
 
     public static ResidenceListPlugin plugin() {
+        if (plugin == null) {
+            plugin = (ResidenceListPlugin) Bukkit.getPluginManager().getPlugin("ResidenceList");
+        }
         return plugin;
     }
 
@@ -53,19 +58,19 @@ public class ResidenceListAPI {
     }
 
     public static DataStorage<?, ?> getStorage() {
-        return plugin.getStorage();
+        return plugin().getStorage();
     }
 
     public void setStorage(@NotNull DataStorage<?, ?> storage) {
-        plugin.setStorage(storage);
+        plugin().setStorage(storage);
     }
 
     public static ResidenceManager<?> getResidenceManager() {
-        return plugin.getResidenceManager();
+        return plugin().getResidenceManager();
     }
 
     public static UserManager<?> getUserManager() {
-        return plugin.getUserManager();
+        return plugin().getUserManager();
     }
 
     public static DateTimeFormatter getFormatter() {

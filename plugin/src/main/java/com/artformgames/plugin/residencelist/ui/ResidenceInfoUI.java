@@ -101,16 +101,19 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT_DISABLED.prepare().get(getViewer())));
         }
 
-        setItem(14, new GUIItem(CONFIG.ITEMS.OWNER.prepare(getData().getOwner())
-                .setSkullOwner(getData().getResidence().getOwnerUUID())
-                .get(getViewer())) {
-            @Override
-            public void onClick(Player clicker, ClickType type) {
-                ResidenceListUI.open(getViewer(), getData().getOwner());
-                PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
-            }
-        });
-
+        if (getData().getOwner() == null) {
+            setItem(14, new GUIItem(CONFIG.ITEMS.SERVER.prepare().get(getViewer())));
+        } else {
+            setItem(14, new GUIItem(CONFIG.ITEMS.OWNER.prepare(getData().getOwner())
+                    .setSkullOwner(getData().getResidence().getOwnerUUID())
+                    .get(getViewer())) {
+                @Override
+                public void onClick(Player clicker, ClickType type) {
+                    ResidenceListUI.open(getViewer(), getData().getOwner());
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                }
+            });
+        }
 
         ResidenceRate rated = getData().getRates().get(getViewer().getUniqueId());
         ItemStack rateIcon;
@@ -214,6 +217,13 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     .defaultLore(
                             "&7",
                             "&a ▶ Click &8|&f See all his residences"
+                    ).params("owner").build();
+
+            ConfiguredItem SERVER = ConfiguredItem.create()
+                    .defaultType(Material.PLAYER_HEAD)
+                    .defaultName("&e&oServer Residence")
+                    .defaultLore(
+                            "&7"
                     ).params("owner").build();
 
             ConfiguredItem TELEPORT_TO = ConfiguredItem.create()

@@ -105,7 +105,24 @@ public class ResidenceManageUI extends AutoPagedGUI {
         setItem(14, new GUIItem(CONFIG.ITEMS.INFORMATION.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
-                if (type.isLeftClick()) {
+                if (type.isShiftClick()) {
+                    clicker.closeInventory();
+                    PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
+                    SelectIconGUI.open(clicker, ((player, itemStack) -> {
+                        Material material = itemStack.getType();
+                        if (PluginConfig.SETTINGS.BLOCKED_ICON_TYPES.contains(material)) {
+                            PluginMessages.EDIT.ICON_BLOCKED.send(player, getData().getDisplayName());
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(player);
+                        } else {
+                            getData().modify(d -> d.setIconMaterial(itemStack.getType()));
+                            PluginMessages.EDIT.ICON_UPDATED.send(player, getData().getDisplayName());
+                            PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                        }
+
+                        loadIcon();
+                        openGUI(player);
+                    }));
+                } else if (type.isLeftClick()) {
                     clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
                     PluginMessages.EDIT.NAME.send(getViewer(), getData().getDisplayName());
@@ -133,23 +150,6 @@ public class ResidenceManageUI extends AutoPagedGUI {
                         loadIcon();
                         openGUI(player);
                     });
-                } else if (type == ClickType.MIDDLE) {
-                    clicker.closeInventory();
-                    PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
-                    SelectIconGUI.open(clicker, ((player, itemStack) -> {
-                        Material material = itemStack.getType();
-                        if (PluginConfig.SETTINGS.BLOCKED_ICON_TYPES.contains(material)) {
-                            PluginMessages.EDIT.ICON_BLOCKED.send(player, getData().getDisplayName());
-                            PluginMessages.EDIT.FAILED_SOUND.playTo(player);
-                        } else {
-                            getData().modify(d -> d.setIconMaterial(itemStack.getType()));
-                            PluginMessages.EDIT.ICON_UPDATED.send(player, getData().getDisplayName());
-                            PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                        }
-
-                        loadIcon();
-                        openGUI(player);
-                    }));
                 }
             }
         });
@@ -271,7 +271,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             "",
                             "&a ▶ LClick &8|&f Set residence's nickname.",
                             "&a ▶ RClick &8|&f Set residence's description.",
-                            "&a ▶ Middle &8|&f Edit residence's icon"
+                            "&a ▶ Shift+Click &8|&f Edit residence's icon"
                     ).build();
 
             ConfiguredItem PUBLIC = ConfiguredItem.create()
