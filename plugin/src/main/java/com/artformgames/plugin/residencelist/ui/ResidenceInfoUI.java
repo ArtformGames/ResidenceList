@@ -18,6 +18,7 @@ import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
+import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -101,7 +102,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT_DISABLED.prepare().get(getViewer())));
         }
 
-        if (getData().getOwner() == null) {
+        if (ResidenceUtils.isServerLand(getData().getResidence())) {
             setItem(14, new GUIItem(CONFIG.ITEMS.SERVER.prepare().get(getViewer())));
         } else {
             setItem(14, new GUIItem(CONFIG.ITEMS.OWNER.prepare(getData().getOwner())
