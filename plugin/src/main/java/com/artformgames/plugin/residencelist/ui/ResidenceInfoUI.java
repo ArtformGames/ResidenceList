@@ -180,7 +180,12 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
         if (!getData().getDescription().isEmpty()) icon.insertLore("description", getData().getDescription());
         if (userData.isPinned(residence.getName())) icon.glow();
-        if (getData().getIconMaterial() != null) icon.handleItem((i, p) -> i.setType(getData().getIconMaterial()));
+        if (data.getIconMaterial() != null) {
+            icon.handleItem((i, p) -> i.setType(data.getIconMaterial()));
+            if (data.getCustomModelData() > 0) {
+                icon.handleMeta((itemMeta, player) -> itemMeta.setCustomModelData(data.getCustomModelData()));
+            }
+        }
         return new GUIItem(icon.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {

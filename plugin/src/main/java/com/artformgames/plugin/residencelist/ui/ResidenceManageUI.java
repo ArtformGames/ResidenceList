@@ -114,7 +114,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             PluginMessages.EDIT.ICON_BLOCKED.send(player, getData().getDisplayName());
                             PluginMessages.EDIT.FAILED_SOUND.playTo(player);
                         } else {
-                            getData().modify(d -> d.setIconMaterial(itemStack.getType()));
+                            getData().modify(d -> d.setIconMaterial(itemStack));
                             PluginMessages.EDIT.ICON_UPDATED.send(player, getData().getDisplayName());
                             PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
                         }
@@ -219,7 +219,12 @@ public class ResidenceManageUI extends AutoPagedGUI {
         icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
         if (!getData().getDescription().isEmpty()) icon.insertLore("description", getData().getDescription());
         if (userData.isPinned(residence.getName())) icon.glow();
-        if (getData().getIconMaterial() != null) icon.handleItem((i, p) -> i.setType(getData().getIconMaterial()));
+        if (data.getIconMaterial() != null) {
+            icon.handleItem((i, p) -> i.setType(data.getIconMaterial()));
+            if (data.getCustomModelData() > 0) {
+                icon.handleMeta((itemMeta, player) -> itemMeta.setCustomModelData(data.getCustomModelData()));
+            }
+        }
         return new GUIItem(icon.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {

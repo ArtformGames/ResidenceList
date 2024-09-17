@@ -6,6 +6,8 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +28,18 @@ public interface ResidenceData {
 
     @Nullable Material getIconMaterial();
 
-    void setIconMaterial(@NotNull Material material);
+    int getCustomModelData();
+
+    default void setIconMaterial(@NotNull ItemStack iconItem) {
+        int customModelData = -1;
+        ItemMeta meta = iconItem.getItemMeta();
+        if (meta != null && meta.hasCustomModelData()) {
+            customModelData = meta.getCustomModelData();
+        }
+        setIconMaterial(iconItem.getType(), customModelData);
+    }
+
+    void setIconMaterial(@NotNull Material material, int customModelData);
 
     default @NotNull String getDisplayName() {
         return Optional.ofNullable(getAliasName()).orElse(getName());

@@ -25,6 +25,8 @@ public class YAMLResidenceData implements ResidenceData {
     protected final @NotNull ClaimedResidence residence;
 
     protected @Nullable Material icon;
+    protected int customModelData; // <= 0 means no custom model data.
+
     protected @Nullable String aliasName;
     protected @NotNull List<String> description;
 
@@ -36,9 +38,17 @@ public class YAMLResidenceData implements ResidenceData {
         this.conf = file.exists() ? YamlConfiguration.loadConfiguration(file) : new YamlConfiguration();
         this.residence = residence;
 
-        this.icon = Optional.ofNullable(conf.getString("icon"))
-                .flatMap(XMaterial::matchXMaterial)
-                .map(XMaterial::parseMaterial).orElse(null);
+        String iconData = conf.getString("icon");
+
+        if (iconData != null) {
+            String[] args = iconData.split(":");
+            this.icon = XMaterial.matchXMaterial(args[0]).map(XMaterial::parseMaterial).orElse(null);
+            try {
+                this.customModelData = args.length > 1 ? Integer.parseInt(args[1]) : null;
+            } catch (NumberFormatException e) {
+            }
+        }
+
         this.aliasName = conf.getString("nickname", residence.getName());
         this.description = conf.getStringList("description");
 
@@ -58,9 +68,19 @@ public class YAMLResidenceData implements ResidenceData {
         return icon;
     }
 
-    public void setIconMaterial(@NotNull Material material) {
+    public int getCustomModelData() {
+        return customModelData;
+    }
+
+    public void setIconMaterial(@NotNull Material material, int customModelData) {
         this.icon = material;
-        this.conf.set("icon", XMaterial.matchXMaterial(material).name());
+        this.customModelData = customModelData;
+
+        if (customModelData > 0) {
+            this.conf.set("icon", XMaterial.matchXMaterial(material).name() + ":" + customModelData);
+        } else {
+            this.conf.set("icon", XMaterial.matchXMaterial(material).name());
+        }
     }
 
     public @NotNull String getDisplayName() {
