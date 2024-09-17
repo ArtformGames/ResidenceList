@@ -226,11 +226,11 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     ).params("owner").build();
 
             ConfiguredItem SERVER = ConfiguredItem.create()
-                    .defaultType(Material.PLAYER_HEAD)
+                    .defaultType(Material.CREEPER_HEAD)
                     .defaultName("&e&oServer Residence")
                     .defaultLore(
                             "&7"
-                    ).params("owner").build();
+                    ).build();
 
             ConfiguredItem TELEPORT_TO = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
