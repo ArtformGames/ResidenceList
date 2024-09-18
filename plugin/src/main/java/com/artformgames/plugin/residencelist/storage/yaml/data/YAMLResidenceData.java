@@ -44,8 +44,8 @@ public class YAMLResidenceData implements ResidenceData {
             String[] args = iconData.split(":");
             this.icon = XMaterial.matchXMaterial(args[0]).map(XMaterial::parseMaterial).orElse(null);
             try {
-                this.customModelData = args.length > 1 ? Integer.parseInt(args[1]) : null;
-            } catch (NumberFormatException e) {
+                this.customModelData = args.length > 1 ? Integer.parseInt(args[1]) : -1;
+            } catch (NumberFormatException | NullPointerException ignored) {
             }
         }
 
