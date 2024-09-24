@@ -42,8 +42,10 @@ public interface PluginConfig extends Configuration {
         @HeaderComment("Default residence status (Public / Private)")
         ConfiguredValue<Boolean> DEFAULT_STATUS = ConfiguredValue.of(Boolean.class, true);
 
+        @HeaderComment("How many letters are displayed per line in the residence description.")
         ConfiguredValue<Integer> LETTERS_PRE_LINE = ConfiguredValue.of(Integer.class, 35);
 
+        @HeaderComment("The unsuitable icon types for the residence list.")
         ConfiguredList<Material> BLOCKED_ICON_TYPES = ConfiguredList.builderOf(Material.class).fromString()
                 .parseValue(s -> Objects.requireNonNull(XMaterial.matchXMaterial(s).orElseThrow().parseMaterial()))
                 .serializeValue(d -> XMaterial.matchXMaterial(d).name())
@@ -53,6 +55,7 @@ public interface PluginConfig extends Configuration {
 
     interface ICON extends Configuration {
 
+        @HeaderComment("The icon of the residence list.")
         ConfiguredItem INFO = ConfiguredItem.create()
                 .defaultType(Material.GRASS_BLOCK)
                 .defaultName("&7# &f%(name)")
@@ -140,7 +143,9 @@ public interface PluginConfig extends Configuration {
 
     interface GUI extends Configuration {
 
+        @HeaderComment("The sound played when the GUI is opened.")
         ConfiguredSound OPEN_SOUND = ConfiguredSound.of(Sound.ENTITY_EXPERIENCE_ORB_PICKUP);
+        @HeaderComment("The sound played when the player click the buttons in GUI.")
         ConfiguredSound CLICK_SOUND = ConfiguredSound.of(Sound.UI_BUTTON_CLICK);
 
         Class<?> LIST = ResidenceListUI.CONFIG.class;
