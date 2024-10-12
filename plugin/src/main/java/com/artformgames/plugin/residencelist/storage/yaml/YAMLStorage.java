@@ -5,6 +5,7 @@ import cc.carm.lib.easyplugin.user.UserDataManager;
 import com.artformgames.plugin.residencelist.Main;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
+import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.artformgames.plugin.residencelist.storage.yaml.data.YAMLResidenceData;
 import com.artformgames.plugin.residencelist.storage.yaml.data.YAMLUserData;
@@ -147,8 +148,13 @@ public class YAMLStorage extends UserDataManager<UUID, YAMLUserData>
                     Main.debugging("Successfully loaded residence data for '" + residenceName + "' !");
                     loaded.put(residenceName, data);
                 } catch (Exception ex) {
-                    Main.severe("Error occurred when loading residence data #" + file.getAbsolutePath() + " !");
-                    ex.printStackTrace();
+                    if (PluginConfig.SETTINGS.AUTO_REMOVE.getNotNull()) {
+                        file.delete();
+                        Main.info("Removed invalid residence data #" + file.getAbsolutePath() + " !");
+                    } else {
+                        Main.severe("Error occurred when loading residence data #" + file.getAbsolutePath() + " !");
+                        ex.printStackTrace();
+                    }
                 }
             }
         }

@@ -39,7 +39,13 @@ public interface PluginConfig extends Configuration {
 
     interface SETTINGS extends Configuration {
 
-        @HeaderComment("Default residence status (Public / Private)")
+        @HeaderComment({
+                "Remove info data when failed to load.",
+                "  true = Delete the info data, false = Only notify, keep the info data."
+        })
+        ConfiguredValue<Boolean> AUTO_REMOVE = ConfiguredValue.of(Boolean.class, true);
+
+        @HeaderComment("Default residence status (Public = true / Private = false)")
         ConfiguredValue<Boolean> DEFAULT_STATUS = ConfiguredValue.of(Boolean.class, true);
 
         @HeaderComment("How many letters are displayed per line in the residence description.")
