@@ -75,7 +75,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
         if (PluginConfig.METRICS.getNotNull()) {
             log("Initializing bStats...");
-            new Metrics(this, 18946);
+            new Metrics(this, 19709);
         }
 
         if (PluginConfig.CHECK_UPDATE.getNotNull()) {
