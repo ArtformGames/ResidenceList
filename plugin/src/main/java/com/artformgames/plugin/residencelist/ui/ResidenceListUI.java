@@ -1,6 +1,7 @@
 package com.artformgames.plugin.residencelist.ui;
 
 import cc.carm.lib.configuration.core.Configuration;
+import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
@@ -137,10 +138,11 @@ public class ResidenceListUI extends AutoPagedGUI {
         display.stream().filter(r -> {
             ResidenceData d = Main.getInstance().getResidenceManager().getResidence(r);
             return d.isPublicDisplayed() || (d.isOwner(getViewer()));
-        }).forEach(residence -> addItem(generateIcon(data, residence)));
+        }).forEach(residence -> addItem(generateIcon(getViewer(), this, owner, data, residence)));
     }
 
-    protected GUIItem generateIcon(UserListData userData, ClaimedResidence residence) {
+    protected static GUIItem generateIcon(Player viewer, GUI previous, String filterOwner,
+                                          UserListData userData, ClaimedResidence residence) {
         ResidenceData data = Main.getInstance().getResidenceManager().getResidence(residence);
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 data.getDisplayName(), data.getOwner(),
@@ -175,13 +177,13 @@ public class ResidenceListUI extends AutoPagedGUI {
                         PluginMessages.PIN.SOUND.playTo(clicker);
                         PluginMessages.PIN.MESSAGE.send(clicker, data.getDisplayName());
                     }
-                    open(getViewer(), owner);
+                    open(viewer, filterOwner);
                 } else if (type.isLeftClick()) { // View information
-                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                    PluginConfig.GUI.CLICK_SOUND.playTo(viewer);
                     if (data.isOwner(clicker)) {
-                        ResidenceManageUI.open(getViewer(), data, ResidenceListUI.this);
+                        ResidenceManageUI.open(viewer, data, previous);
                     } else {
-                        ResidenceInfoUI.open(getViewer(), data, ResidenceListUI.this);
+                        ResidenceInfoUI.open(viewer, data, previous);
                     }
                 } else if (type.isRightClick()) { // Teleport to residence (If allowed)
                     if (!data.canTeleport(viewer)) return;
