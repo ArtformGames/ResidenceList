@@ -1,9 +1,10 @@
 ---
 name: Features 
 about: Ask for new features.
-title: ''
+title: 'feat: '
 labels: enhancement 
 assignees: ''
+projects: ["ArtformGames/3"]
 ---
 
 ### **Description**

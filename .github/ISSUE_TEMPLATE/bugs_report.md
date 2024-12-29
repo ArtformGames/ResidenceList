@@ -1,10 +1,10 @@
 ---
 name: Submit bugs&issues
 about: Describe the problem and submit it to help us review and fix it.
-title: ''
+title: 'fix: '
 labels: bug
 assignees: ''
-
+projects: ["ArtformGames/3"]
 ---
 
 ### **Description**
@@ -24,7 +24,6 @@ Describe the problem discovered through what operations, such as:
 ### **Expected result** _(Optional)_
 
 ### **Screenshots & Error Logs**
-
 
 ### **Environment**
 
