@@ -209,7 +209,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         for (ResidencePlayer trustedPlayer : residence.getTrustedPlayers()) {
             addItem(new GUIItem(
                     CONFIG.ITEMS.PLAYER.prepare(trustedPlayer.getName(), trustedPlayer.getUniqueId())
-                            .setSkullOwner(trustedPlayer.getUniqueId())
+                            .setSkullOwner(trustedPlayer.getName())
                             .get(viewer)
             ));
         }
