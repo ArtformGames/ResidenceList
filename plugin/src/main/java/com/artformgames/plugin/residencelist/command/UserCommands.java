@@ -20,13 +20,13 @@ public class UserCommands extends CommandHandler {
 
     @Override
     public Void noArgs(CommandSender sender) {
-        PluginMessages.COMMAND.USER.send(sender);
+        PluginMessages.COMMAND.USER.sendTo(sender);
         return null;
     }
 
     @Override
     public Void noPermission(CommandSender sender) {
-        PluginMessages.COMMAND.NO_PERMISSION.send(sender);
+        PluginMessages.COMMAND.NO_PERMISSION.sendTo(sender);
         return null;
     }
 

@@ -25,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 public class Main extends EasyPlugin implements ResidenceListPlugin {
     private static Main instance;
 
-
     public Main() {
         super(EasyPluginMessageProvider.EN_US);
         Main.instance = this;
@@ -34,7 +33,6 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
     protected MineConfiguration configuration;
     protected DataStorage<?, ?> storage;
-
 
     @Override
     protected void load() {

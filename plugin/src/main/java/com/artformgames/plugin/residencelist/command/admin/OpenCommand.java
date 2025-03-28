@@ -5,7 +5,7 @@ import cc.carm.lib.easyplugin.command.SubCommand;
 import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.ui.ResidenceAdminUI;
+import com.artformgames.plugin.residencelist.ui.admin.ResidenceAdminUI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -26,7 +26,7 @@ public class OpenCommand extends SubCommand<AdminCommands> {
     @Override
     public Void execute(JavaPlugin plugin, CommandSender sender, String[] args) throws Exception {
         if (!(sender instanceof Player player)) {
-            PluginMessages.COMMAND.ONLY_PLAYER.send(sender);
+            PluginMessages.COMMAND.ONLY_PLAYER.sendTo(sender);
             return null;
         }
 
@@ -36,7 +36,7 @@ public class OpenCommand extends SubCommand<AdminCommands> {
                     .filter(s -> s.getName() != null && s.getName().equals(args[0]))
                     .findFirst().orElse(null);
             if (owner == null) {
-                PluginMessages.COMMAND.UNKNOWN_PLAYER.send(sender, args[0]);
+                PluginMessages.COMMAND.UNKNOWN_PLAYER.sendTo(sender, args[0]);
                 return null;
             }
         }

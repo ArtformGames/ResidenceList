@@ -38,7 +38,7 @@ public class UserListener implements Listener {
         UserListData data = getUserManager().getNullable(e.getPlayer().getUniqueId());
         if (data == null) {
             e.setResult(PlayerLoginEvent.Result.KICK_OTHER);
-            Optional.ofNullable(PluginMessages.LOAD_FAILED.parseToLine(e.getPlayer())).ifPresent(e::setKickMessage);
+            Optional.ofNullable(PluginMessages.LOAD_FAILED.parseLine(e.getPlayer())).ifPresent(e::setKickMessage);
         }
     }
 

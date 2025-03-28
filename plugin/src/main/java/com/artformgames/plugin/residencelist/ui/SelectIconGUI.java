@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.Configuration;
+import cc.carm.lib.configuration.Configuration;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
@@ -14,7 +14,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public class SelectIconGUI extends GUI {
@@ -27,7 +26,7 @@ public class SelectIconGUI extends GUI {
     protected final @NotNull BiConsumer<Player, ItemStack> callback;
 
     public SelectIconGUI(@NotNull Player player, @NotNull BiConsumer<Player, ItemStack> callback) {
-        super(GUIType.ONE_BY_NINE, Objects.requireNonNull(CONFIG.TITLE.parse(player)));
+        super(GUIType.ONE_BY_NINE, CONFIG.TITLE.parseLine(player));
         this.player = player;
         this.callback = callback;
 

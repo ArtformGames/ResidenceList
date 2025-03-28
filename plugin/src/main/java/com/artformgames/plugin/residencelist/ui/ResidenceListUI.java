@@ -1,12 +1,11 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.Configuration;
+import cc.carm.lib.configuration.Configuration;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
 import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessage;
-import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessageList;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.PreparedItem;
 import com.artformgames.plugin.residencelist.Main;
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 public class ResidenceListUI extends AutoPagedGUI {
 
@@ -54,7 +52,7 @@ public class ResidenceListUI extends AutoPagedGUI {
 
         initItems();
         loadResidences();
-        this.title = Objects.requireNonNull(CONFIG.TITLE.parse(viewer, 1, getLastPageNumber()));
+        this.title = CONFIG.TITLE.parseLine(viewer, 1, getLastPageNumber());
     }
 
     public @NotNull Player getViewer() {
@@ -117,7 +115,7 @@ public class ResidenceListUI extends AutoPagedGUI {
     @Override
     public void onPageChange(int pageNum) {
         PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
-        updateTitle(Objects.requireNonNull(CONFIG.TITLE.parse(viewer, pageNum, getLastPageNumber())));
+        updateTitle(CONFIG.TITLE.parseLine(viewer, pageNum, getLastPageNumber()));
     }
 
     public void loadResidences() {
@@ -150,11 +148,11 @@ public class ResidenceListUI extends AutoPagedGUI {
                 data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
         );
         if (data.canTeleport(viewer)) {
-            icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.TELEPORTABLE);
+            icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.TELEPORTABLE);
         } else {
-            icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.NORMAL);
+            icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.NORMAL);
         }
-        if (!data.getDescription().isEmpty()) icon.insertLore("description", data.getDescription());
+        if (!data.getDescription().isEmpty()) icon.insert("description", data.getDescription());
         if (userData.isPinned(residence.getName())) {
             icon.glow();
         }
@@ -171,11 +169,11 @@ public class ResidenceListUI extends AutoPagedGUI {
                     if (userData.isPinned(residence.getName())) {
                         userData.removePin(residence.getName());
                         PluginMessages.UNPIN.SOUND.playTo(clicker);
-                        PluginMessages.UNPIN.MESSAGE.send(clicker, data.getDisplayName());
+                        PluginMessages.UNPIN.MESSAGE.sendTo(clicker, data.getDisplayName());
                     } else {
                         userData.setPin(residence.getName(), 0);
                         PluginMessages.PIN.SOUND.playTo(clicker);
-                        PluginMessages.PIN.MESSAGE.send(clicker, data.getDisplayName());
+                        PluginMessages.PIN.MESSAGE.sendTo(clicker, data.getDisplayName());
                     }
                     open(viewer, filterOwner);
                 } else if (type.isLeftClick()) { // View information
@@ -189,7 +187,7 @@ public class ResidenceListUI extends AutoPagedGUI {
                     if (!data.canTeleport(viewer)) return;
                     Location target = data.getTeleportLocation(viewer);
                     if (target == null) {
-                        PluginMessages.TELEPORT.NO_LOCATION.send(clicker, data.getDisplayName());
+                        PluginMessages.TELEPORT.NO_LOCATION.sendTo(clicker, data.getDisplayName());
                         return;
                     }
                     data.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
@@ -270,11 +268,11 @@ public class ResidenceListUI extends AutoPagedGUI {
 
         interface ADDITIONAL_LORE extends Configuration {
 
-            ConfiguredMessageList<String> NORMAL = ConfiguredMessageList.asStrings()
+            ConfiguredMessage<String> NORMAL = ConfiguredMessage.asString()
                     .defaults("&a ▶ Click &8|&f View information", "&a ▶ Drop &8|&f Pin/Unpin residence")
                     .build();
 
-            ConfiguredMessageList<String> TELEPORTABLE = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessage<String> TELEPORTABLE = ConfiguredMessage.asString().defaults(
                     "&a ▶ LClick &8|&f View information",
                     "&a ▶ RClick &8|&f Teleport to residence",
                     "&a ▶  Drop  &8|&f Pin/Unpin residence"

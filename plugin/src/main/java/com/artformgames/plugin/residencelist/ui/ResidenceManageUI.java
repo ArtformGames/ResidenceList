@@ -1,12 +1,11 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.Configuration;
+import cc.carm.lib.configuration.Configuration;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
 import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessage;
-import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessageList;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.PreparedItem;
 import com.artformgames.plugin.residencelist.Main;
@@ -25,7 +24,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.Optional;
 
 public class ResidenceManageUI extends AutoPagedGUI {
@@ -39,7 +37,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
     protected @Nullable GUI previousGUI;
 
     public ResidenceManageUI(@NotNull Player viewer, @NotNull ResidenceData data, @Nullable GUI previousGUI) {
-        super(GUIType.SIX_BY_NINE, Objects.requireNonNull(CONFIG.TITLE.parse(viewer, data.getDisplayName())), 28, 52);
+        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, data.getDisplayName()), 28, 52);
         this.viewer = viewer;
         this.data = data;
         this.previousGUI = previousGUI;
@@ -111,11 +109,11 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     SelectIconGUI.open(clicker, ((player, itemStack) -> {
                         Material material = itemStack.getType();
                         if (PluginConfig.SETTINGS.BLOCKED_ICON_TYPES.contains(material)) {
-                            PluginMessages.EDIT.ICON_BLOCKED.send(player, getData().getDisplayName());
+                            PluginMessages.EDIT.ICON_BLOCKED.sendTo(player, getData().getDisplayName());
                             PluginMessages.EDIT.FAILED_SOUND.playTo(player);
                         } else {
                             getData().modify(d -> d.setIconMaterial(itemStack));
-                            PluginMessages.EDIT.ICON_UPDATED.send(player, getData().getDisplayName());
+                            PluginMessages.EDIT.ICON_UPDATED.sendTo(player, getData().getDisplayName());
                             PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
                         }
 
@@ -125,16 +123,16 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 } else if (type.isLeftClick()) {
                     clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
-                    PluginMessages.EDIT.NAME.send(getViewer(), getData().getDisplayName());
+                    PluginMessages.EDIT.NAME.sendTo(getViewer(), getData().getDisplayName());
                     EditHandler.start(getViewer(), (player, content) -> {
                         setItem(11, generateIcon(getPlayerData(), getData().getResidence()));
                         if (content.length() > 16) {
-                            PluginMessages.EDIT.NAME_TOO_LONG.send(player);
+                            PluginMessages.EDIT.NAME_TOO_LONG.sendTo(player);
                             PluginMessages.EDIT.FAILED_SOUND.playTo(player);
                             return;
                         }
                         getData().modify(d -> d.setNickname(content));
-                        PluginMessages.EDIT.NAME_UPDATED.send(player, getData().getDisplayName());
+                        PluginMessages.EDIT.NAME_UPDATED.sendTo(player, getData().getDisplayName());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
                         loadIcon();
                         openGUI(player);
@@ -142,10 +140,10 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 } else if (type.isRightClick()) {
                     clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
-                    PluginMessages.EDIT.DESCRIPTION.send(getViewer(), getData().getDisplayName());
+                    PluginMessages.EDIT.DESCRIPTION.sendTo(getViewer(), getData().getDisplayName());
                     EditHandler.start(getViewer(), (player, content) -> {
                         getData().modify(d -> d.setDescription(content.split("\\\\n")));
-                        PluginMessages.EDIT.DESCRIPTION_UPDATED.send(player, getData().getDisplayName());
+                        PluginMessages.EDIT.DESCRIPTION_UPDATED.sendTo(player, getData().getDisplayName());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
                         loadIcon();
                         openGUI(player);
@@ -192,9 +190,9 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     PluginConfig.DATETIME_FORMATTER.format(value.time())
             );
             preparedItem.setSkullOwner(value.author());
-            preparedItem.insertLore("comment", GUIUtils.sortContent(value.content()));
+            preparedItem.insert("comment", GUIUtils.sortContent(value.content()));
             if (getViewer().hasPermission("residence.admin")) {
-                preparedItem.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.REMOVE);
+                preparedItem.insert("click-lore", CONFIG.ADDITIONAL_LORE.REMOVE);
             }
             addItem(new GUIItem(preparedItem.get(getViewer())) {
                 @Override
@@ -216,8 +214,8 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
                 data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
         );
-        icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
-        if (!getData().getDescription().isEmpty()) icon.insertLore("description", getData().getDescription());
+        icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
+        if (!getData().getDescription().isEmpty()) icon.insert("description", getData().getDescription());
         if (userData.isPinned(residence.getName())) icon.glow();
         if (data.getIconMaterial() != null) {
             icon.handleItem((i, p) -> i.setType(data.getIconMaterial()));
@@ -232,11 +230,11 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     if (userData.isPinned(residence.getName())) {
                         userData.removePin(residence.getName());
                         PluginMessages.UNPIN.SOUND.playTo(clicker);
-                        PluginMessages.UNPIN.MESSAGE.send(clicker, residenceData.getDisplayName());
+                        PluginMessages.UNPIN.MESSAGE.sendTo(clicker, residenceData.getDisplayName());
                     } else {
                         userData.setPin(residence.getName(), 0);
                         PluginMessages.PIN.SOUND.playTo(clicker);
-                        PluginMessages.PIN.MESSAGE.send(clicker, residenceData.getDisplayName());
+                        PluginMessages.PIN.MESSAGE.sendTo(clicker, residenceData.getDisplayName());
                     }
                     loadIcon();
                     updateView();
@@ -312,11 +310,11 @@ public class ResidenceManageUI extends AutoPagedGUI {
 
         interface ADDITIONAL_LORE extends Configuration {
 
-            ConfiguredMessageList<String> CLICK = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessage<String> CLICK = ConfiguredMessage.asString().defaults(
                     "&a ▶ LClick &8|&f Pin/Unpin residence"
             ).build();
 
-            ConfiguredMessageList<String> REMOVE = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessage<String> REMOVE = ConfiguredMessage.asString().defaults(
                     "&a ▶ LClick &8|&f Delete this comment &c(ADMIN)"
             ).build();
 

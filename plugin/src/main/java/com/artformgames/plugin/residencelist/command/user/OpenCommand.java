@@ -26,7 +26,7 @@ public class OpenCommand extends SubCommand<UserCommands> {
     @Override
     public Void execute(JavaPlugin plugin, CommandSender sender, String[] args) throws Exception {
         if (!(sender instanceof Player player)) {
-            PluginMessages.COMMAND.ONLY_PLAYER.send(sender);
+            PluginMessages.COMMAND.ONLY_PLAYER.sendTo(sender);
             return null;
         }
 
@@ -36,7 +36,7 @@ public class OpenCommand extends SubCommand<UserCommands> {
                     .filter(s -> s.getName() != null && s.getName().equals(args[0]))
                     .findFirst().orElse(null);
             if (owner == null) {
-                PluginMessages.COMMAND.UNKNOWN_PLAYER.send(sender, args[0]);
+                PluginMessages.COMMAND.UNKNOWN_PLAYER.sendTo(sender, args[0]);
                 return null;
             }
         }

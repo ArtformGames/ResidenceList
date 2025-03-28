@@ -1,12 +1,11 @@
 package com.artformgames.plugin.residencelist.ui;
 
-import cc.carm.lib.configuration.core.Configuration;
+import cc.carm.lib.configuration.Configuration;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
 import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessage;
-import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessageList;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.PreparedItem;
 import com.artformgames.plugin.residencelist.Main;
@@ -19,6 +18,7 @@ import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
 import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
+import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,7 +28,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.Optional;
 
 public class ResidenceInfoUI extends AutoPagedGUI {
@@ -42,7 +41,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
     protected @Nullable GUI previousGUI;
 
     public ResidenceInfoUI(@NotNull Player viewer, @NotNull ResidenceData data, @Nullable GUI previousGUI) {
-        super(GUIType.SIX_BY_NINE, Objects.requireNonNull(CONFIG.TITLE.parse(viewer, data.getDisplayName())), 28, 52);
+        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, data.getDisplayName()), 28, 52);
         this.viewer = viewer;
         this.data = data;
         this.previousGUI = previousGUI;
@@ -57,7 +56,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
 
         initItems();
         loadIcon();
-        loadRates();
+        displayRates(); // By default, show rates.
     }
 
     public @NotNull Player getViewer() {
@@ -122,7 +121,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             rateIcon = CONFIG.ITEMS.RATE.get(getViewer());
         } else {
             rateIcon = CONFIG.ITEMS.RATED.prepare(ResidenceListAPI.format(rated.time()))
-                    .insertLore("comment", GUIUtils.sortContent(rated.content()))
+                    .insert("comment", GUIUtils.sortContent(rated.content()))
                     .get(getViewer());
         }
         setItem(15, new GUIItem(rateIcon) {
@@ -131,7 +130,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 if (!(type.isLeftClick() || type.isRightClick())) return;
                 clicker.closeInventory();
                 boolean recommend = type.isLeftClick();
-                PluginMessages.COMMENT.NOTIFY.send(clicker, getData().getDisplayName());
+                PluginMessages.COMMENT.NOTIFY.sendTo(clicker, getData().getDisplayName());
                 PluginMessages.COMMENT.ASK_SOUND.playTo(clicker);
                 EditHandler.start(clicker, (player, content) -> {
                     getData().modify(d -> d.addRate(content, recommend, getViewer().getUniqueId()));
@@ -146,7 +145,21 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         });
     }
 
-    public void loadRates() {
+    public void displayRates() {
+        this.container.clear();
+        this.page = 1;
+
+        setItem(16, new GUIItem(CONFIG.ITEMS.MEMBERS
+                .prepare(getData().getResidence().getTrustedPlayers().size())
+                .get(viewer)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                displayMembers();
+                updateView();
+                PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+            }
+        });
+
         if (getData().getRates().isEmpty()) {
             setItem(40, new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
             return;
@@ -159,10 +172,46 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     PluginConfig.DATETIME_FORMATTER.format(value.time())
             );
             preparedItem.setSkullOwner(value.author());
-            preparedItem.insertLore("comment", GUIUtils.sortContent(value.content()));
+            preparedItem.insert("comment", GUIUtils.sortContent(value.content()));
             addItem(new GUIItem(preparedItem.get(getViewer())) {
 
             });
+        }
+    }
+
+    public void displayMembers() {
+        this.container.clear();
+        this.page = 1;
+
+        setItem(16, new GUIItem(CONFIG.ITEMS.RATES
+                .prepare(getData().getRates().size())
+                .get(viewer)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                displayRates();
+                updateView();
+                PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+            }
+        });
+
+        ClaimedResidence residence = getData().getResidence();
+        if (!ResidenceUtils.isServerLand(getData().getResidence())) {
+            addItem(new GUIItem(CONFIG.ITEMS.OWNER.prepare(getData().getOwner())
+                    .setSkullOwner(getData().getResidence().getOwnerUUID())
+                    .get(getViewer())) {
+                @Override
+                public void onClick(Player clicker, ClickType type) {
+                    ResidenceListUI.open(getViewer(), getData().getOwner());
+                    PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
+                }
+            });
+        }
+        for (ResidencePlayer trustedPlayer : residence.getTrustedPlayers()) {
+            addItem(new GUIItem(
+                    CONFIG.ITEMS.PLAYER.prepare(trustedPlayer.getName(), trustedPlayer.getUniqueId())
+                            .setSkullOwner(trustedPlayer.getUniqueId())
+                            .get(viewer)
+            ));
         }
     }
 
@@ -177,8 +226,8 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
                 data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
         );
-        icon.insertLore("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
-        if (!getData().getDescription().isEmpty()) icon.insertLore("description", getData().getDescription());
+        icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
+        if (!getData().getDescription().isEmpty()) icon.insert("description", getData().getDescription());
         if (userData.isPinned(residence.getName())) icon.glow();
         if (data.getIconMaterial() != null) {
             icon.handleItem((i, p) -> i.setType(data.getIconMaterial()));
@@ -193,11 +242,11 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 if (userData.isPinned(residence.getName())) {
                     userData.removePin(residence.getName());
                     PluginMessages.UNPIN.SOUND.playTo(clicker);
-                    PluginMessages.UNPIN.MESSAGE.send(clicker, residenceData.getDisplayName());
+                    PluginMessages.UNPIN.MESSAGE.sendTo(clicker, residenceData.getDisplayName());
                 } else {
                     userData.setPin(residence.getName(), 0);
                     PluginMessages.PIN.SOUND.playTo(clicker);
-                    PluginMessages.PIN.MESSAGE.send(clicker, residenceData.getDisplayName());
+                    PluginMessages.PIN.MESSAGE.sendTo(clicker, residenceData.getDisplayName());
                 }
                 loadIcon();
                 updateView();
@@ -253,6 +302,34 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             ""
                     ).build();
 
+            ConfiguredItem PLAYER = ConfiguredItem.create()
+                    .defaultType(Material.PLAYER_HEAD)
+                    .defaultName("&a%(name)")
+                    .defaultLore(
+                            "&7"
+                    ).params("name", "uuid").build();
+
+
+            ConfiguredItem MEMBERS = ConfiguredItem.create()
+                    .defaultType(Material.FURNACE)
+                    .defaultName("&eMembers")
+                    .defaultLore(
+                            "&7",
+                            "&7This residence has &f%(members) &7members.",
+                            "&7",
+                            "&a ▶ Click &8|&f See all members."
+                    ).params("members").build();
+
+            ConfiguredItem RATES = ConfiguredItem.create()
+                    .defaultType(Material.COPPER_BLOCK)
+                    .defaultName("&eRates")
+                    .defaultLore(
+                            "&7",
+                            "&7This residence has &f%(size) &7rates.",
+                            "&7",
+                            "&a ▶ Click &8|&f See all rates."
+                    ).params("size").build();
+
             ConfiguredItem RATE = ConfiguredItem.create()
                     .defaultType(Material.WRITABLE_BOOK)
                     .defaultName("&eRate && Comment")
@@ -290,7 +367,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
 
         interface ADDITIONAL_LORE extends Configuration {
 
-            ConfiguredMessageList<String> CLICK = ConfiguredMessageList.asStrings().defaults(
+            ConfiguredMessage<String> CLICK = ConfiguredMessage.asString().defaults(
                     "&a ▶ Click &8|&f Pin/Unpin residence"
             ).build();
 

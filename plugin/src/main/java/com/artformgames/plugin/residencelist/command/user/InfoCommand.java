@@ -25,14 +25,14 @@ public class InfoCommand extends SubCommand<UserCommands> {
     @Override
     public Void execute(JavaPlugin plugin, CommandSender sender, String[] args) throws Exception {
         if (!(sender instanceof Player player)) {
-            PluginMessages.COMMAND.ONLY_PLAYER.send(sender);
+            PluginMessages.COMMAND.ONLY_PLAYER.sendTo(sender);
             return null;
         }
         if (args.length < 1) return getParent().noArgs(sender);
 
         ClaimedResidence residence = ResidenceListAPI.getResidence(args[0]);
         if (residence == null) {
-            PluginMessages.COMMAND.NOT_EXISTS.send(sender, args[0]);
+            PluginMessages.COMMAND.NOT_EXISTS.sendTo(sender, args[0]);
             return null;
         }
 
