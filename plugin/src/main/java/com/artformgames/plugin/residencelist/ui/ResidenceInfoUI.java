@@ -155,7 +155,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 displayMembers();
-                updateView();
+                openGUI(viewer);
                 PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
             }
         });
@@ -190,7 +190,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 displayRates();
-                updateView();
+                openGUI(viewer);
                 PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
             }
         });
