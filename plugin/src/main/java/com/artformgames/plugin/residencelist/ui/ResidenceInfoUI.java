@@ -161,6 +161,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         });
 
         if (getData().getRates().isEmpty()) {
+            goFirstPage();
             setItem(40, new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
             return;
         }
@@ -177,11 +178,11 @@ public class ResidenceInfoUI extends AutoPagedGUI {
 
             });
         }
+        goFirstPage();
     }
 
     public void displayMembers() {
         this.container.clear();
-        this.page = 1;
 
         setItem(16, new GUIItem(CONFIG.ITEMS.RATES
                 .prepare(getData().getRates().size())
@@ -213,6 +214,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             .get(viewer)
             ));
         }
+        goFirstPage();
     }
 
     public void loadIcon() {
