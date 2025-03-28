@@ -3,10 +3,10 @@ package com.artformgames.plugin.residencelist;
 import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.i18n.EasyPluginMessageProvider;
-import cc.carm.lib.mineconfiguration.bukkit.MineConfiguration;
 import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
+import com.artformgames.plugin.residencelist.conf.PluginConfiguration;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.hooker.PluginExpansion;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
@@ -31,14 +31,14 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         ResidenceListAPI.plugin = this;
     }
 
-    protected MineConfiguration configuration;
+    protected PluginConfiguration configuration;
     protected DataStorage<?, ?> storage;
 
     @Override
     protected void load() {
 
         log("Loading plugin configurations...");
-        this.configuration = new MineConfiguration(this);
+        this.configuration = new PluginConfiguration(this);
         this.configuration.initializeConfig(PluginConfig.class);
         this.configuration.initializeMessage(PluginMessages.class);
 
@@ -100,7 +100,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         return PluginConfig.DEBUG.getNotNull();
     }
 
-    public MineConfiguration getConfiguration() {
+    public PluginConfiguration getConfiguration() {
         return configuration;
     }
 
