@@ -29,16 +29,22 @@ import java.util.Comparator;
 public class ResidenceAdminUI extends AutoPagedGUI {
 
     public static void open(@NotNull Player player, @Nullable String owner) {
-        new ResidenceAdminUI(player, owner).openGUI(player);
+        UserListData data = ResidenceListAPI.getUserManager().getNullable(player.getUniqueId());
+        if (data == null) {
+            PluginMessages.LOAD_FAILED.sendTo(player);
+            return;
+        }
+        new ResidenceAdminUI(player, data, owner).openGUI(player);
     }
 
-    protected @NotNull Player viewer;
-
+    protected final @NotNull Player viewer;
+    protected final @NotNull UserListData data;
     protected @Nullable String owner;
 
-    public ResidenceAdminUI(@NotNull Player viewer, @Nullable String owner) {
+    public ResidenceAdminUI(@NotNull Player viewer, @NotNull UserListData data, @Nullable String owner) {
         super(GUIType.SIX_BY_NINE, "", 10, 34);
         this.viewer = viewer;
+        this.data = data;
         this.owner = owner;
 
         setPreviousPageSlot(47);
@@ -59,7 +65,7 @@ public class ResidenceAdminUI extends AutoPagedGUI {
     }
 
     public UserListData getPlayerData() {
-        return Main.getInstance().getUserManager().get(getViewer());
+        return this.data;
     }
 
     public boolean checkOwner(ClaimedResidence residence) {

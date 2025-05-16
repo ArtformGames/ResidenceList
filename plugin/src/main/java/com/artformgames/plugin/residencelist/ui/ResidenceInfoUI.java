@@ -33,17 +33,26 @@ import java.util.Optional;
 public class ResidenceInfoUI extends AutoPagedGUI {
 
     public static void open(@NotNull Player player, @NotNull ResidenceData data, @Nullable GUI previousGUI) {
-        new ResidenceInfoUI(player, data, previousGUI).openGUI(player);
+        UserListData user = ResidenceListAPI.getUserManager().getNullable(player.getUniqueId());
+        if (user == null) {
+            PluginMessages.LOAD_FAILED.sendTo(player);
+            return;
+        }
+        new ResidenceInfoUI(player, user, data, previousGUI).openGUI(player);
     }
 
-    protected @NotNull Player viewer;
-    protected @NotNull ResidenceData data;
+    protected final @NotNull Player viewer;
+    protected final @NotNull UserListData userData;
+    protected @NotNull ResidenceData residenceData;
     protected @Nullable GUI previousGUI;
 
-    public ResidenceInfoUI(@NotNull Player viewer, @NotNull ResidenceData data, @Nullable GUI previousGUI) {
-        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, data.getDisplayName()), 28, 52);
+    public ResidenceInfoUI(@NotNull Player viewer,
+                           @NotNull UserListData userData, @NotNull ResidenceData residenceData,
+                           @Nullable GUI previousGUI) {
+        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, residenceData.getDisplayName()), 28, 52);
         this.viewer = viewer;
-        this.data = data;
+        this.userData = userData;
+        this.residenceData = residenceData;
         this.previousGUI = previousGUI;
 
         setPreviousPageSlot(36);
@@ -64,11 +73,11 @@ public class ResidenceInfoUI extends AutoPagedGUI {
     }
 
     public UserListData getPlayerData() {
-        return Main.getInstance().getUserManager().get(getViewer());
+        return this.userData;
     }
 
-    public @NotNull ResidenceData getData() {
-        return data;
+    public @NotNull ResidenceData getResidenceData() {
+        return residenceData;
     }
 
     public void initItems() {
@@ -83,17 +92,17 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             });
         }
 
-        Location teleportLocation = getData().getTeleportLocation(getViewer());
-        if (teleportLocation != null && getData().canTeleport(getViewer())) {
+        Location teleportLocation = getResidenceData().getTeleportLocation(getViewer());
+        if (teleportLocation != null && getResidenceData().canTeleport(getViewer())) {
             setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT_TO.prepare(
-                    getData().getResidence().getMainArea().getWorldName(),
+                    getResidenceData().getResidence().getMainArea().getWorldName(),
                     teleportLocation.getBlockX(),
                     teleportLocation.getBlockY(),
                     teleportLocation.getBlockZ()
             ).get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
-                    data.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
+                    residenceData.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
                     PluginMessages.TELEPORT.SOUND.playTo(clicker);
                 }
             });
@@ -101,21 +110,21 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT_DISABLED.prepare().get(getViewer())));
         }
 
-        if (ResidenceUtils.isServerLand(getData().getResidence())) {
+        if (ResidenceUtils.isServerLand(getResidenceData().getResidence())) {
             setItem(14, new GUIItem(CONFIG.ITEMS.SERVER.prepare().get(getViewer())));
         } else {
-            setItem(14, new GUIItem(CONFIG.ITEMS.OWNER.prepare(getData().getOwner())
-                    .setSkullOwner(getData().getResidence().getOwnerUUID())
+            setItem(14, new GUIItem(CONFIG.ITEMS.OWNER.prepare(getResidenceData().getOwner())
+                    .setSkullOwner(getResidenceData().getResidence().getOwnerUUID())
                     .get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
-                    ResidenceListUI.open(getViewer(), getData().getOwner());
+                    ResidenceListUI.open(getViewer(), getResidenceData().getOwner());
                     PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
                 }
             });
         }
 
-        ResidenceRate rated = getData().getRates().get(getViewer().getUniqueId());
+        ResidenceRate rated = getResidenceData().getRates().get(getViewer().getUniqueId());
         ItemStack rateIcon;
         if (rated == null) {
             rateIcon = CONFIG.ITEMS.RATE.get(getViewer());
@@ -130,11 +139,11 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 if (!(type.isLeftClick() || type.isRightClick())) return;
                 clicker.closeInventory();
                 boolean recommend = type.isLeftClick();
-                PluginMessages.COMMENT.NOTIFY.sendTo(clicker, getData().getDisplayName());
+                PluginMessages.COMMENT.NOTIFY.sendTo(clicker, getResidenceData().getDisplayName());
                 PluginMessages.COMMENT.ASK_SOUND.playTo(clicker);
                 EditHandler.start(clicker, (player, content) -> {
-                    getData().modify(d -> d.addRate(content, recommend, getViewer().getUniqueId()));
-                    open(player, getData(), previousGUI);
+                    getResidenceData().modify(d -> d.addRate(content, recommend, getViewer().getUniqueId()));
+                    open(player, getResidenceData(), previousGUI);
                     if (recommend) {
                         PluginMessages.COMMENT.YES_SOUND.playTo(player);
                     } else {
@@ -150,7 +159,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         this.page = 1;
 
         setItem(16, new GUIItem(CONFIG.ITEMS.MEMBERS
-                .prepare(getData().getResidence().getTrustedPlayers().size())
+                .prepare(getResidenceData().getResidence().getTrustedPlayers().size())
                 .get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
@@ -160,13 +169,13 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             }
         });
 
-        if (getData().getRates().isEmpty()) {
+        if (getResidenceData().getRates().isEmpty()) {
             goFirstPage();
             setItem(40, new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
             return;
         }
 
-        for (ResidenceRate value : getData().getRates().values()) {
+        for (ResidenceRate value : getResidenceData().getRates().values()) {
             ConfiguredItem item = value.recommend() ? PluginConfig.ICON.RATE.LIKE : PluginConfig.ICON.RATE.DISLIKE;
             PreparedItem preparedItem = item.prepare(
                     Optional.ofNullable(value.getAuthorName()).orElse("?"),
@@ -185,7 +194,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         this.container.clear();
 
         setItem(16, new GUIItem(CONFIG.ITEMS.RATES
-                .prepare(getData().getRates().size())
+                .prepare(getResidenceData().getRates().size())
                 .get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
@@ -195,14 +204,14 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             }
         });
 
-        ClaimedResidence residence = getData().getResidence();
-        if (!ResidenceUtils.isServerLand(getData().getResidence())) {
-            addItem(new GUIItem(CONFIG.ITEMS.OWNER.prepare(getData().getOwner())
-                    .setSkullOwner(getData().getResidence().getOwnerUUID())
+        ClaimedResidence residence = getResidenceData().getResidence();
+        if (!ResidenceUtils.isServerLand(getResidenceData().getResidence())) {
+            addItem(new GUIItem(CONFIG.ITEMS.OWNER.prepare(getResidenceData().getOwner())
+                    .setSkullOwner(getResidenceData().getResidence().getOwnerUUID())
                     .get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
-                    ResidenceListUI.open(getViewer(), getData().getOwner());
+                    ResidenceListUI.open(getViewer(), getResidenceData().getOwner());
                     PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
                 }
             });
@@ -218,23 +227,24 @@ public class ResidenceInfoUI extends AutoPagedGUI {
     }
 
     public void loadIcon() {
-        setItem(11, generateIcon(getPlayerData(), getData().getResidence()));
+        setItem(11, generateIcon(getPlayerData(), getResidenceData().getResidence()));
     }
 
     protected GUIItem generateIcon(UserListData userData, ClaimedResidence residence) {
         ResidenceData residenceData = Main.getInstance().getResidenceManager().getResidence(residence);
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
-                data.getDisplayName(), data.getOwner(),
+                this.residenceData.getDisplayName(), this.residenceData.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
-                data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
+                this.residenceData.countRate(ResidenceRate::recommend), this.residenceData.countRate(r -> !r.recommend())
         );
         icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
-        if (!getData().getDescription().isEmpty()) icon.insert("description", getData().getDescription());
+        if (!getResidenceData().getDescription().isEmpty())
+            icon.insert("description", getResidenceData().getDescription());
         if (userData.isPinned(residence.getName())) icon.glow();
-        if (data.getIconMaterial() != null) {
-            icon.handleItem((i, p) -> i.setType(data.getIconMaterial()));
-            if (data.getCustomModelData() > 0) {
-                icon.handleMeta((itemMeta, player) -> itemMeta.setCustomModelData(data.getCustomModelData()));
+        if (this.residenceData.getIconMaterial() != null) {
+            icon.handleItem((i, p) -> i.setType(this.residenceData.getIconMaterial()));
+            if (this.residenceData.getCustomModelData() > 0) {
+                icon.handleMeta((itemMeta, player) -> itemMeta.setCustomModelData(this.residenceData.getCustomModelData()));
             }
         }
         return new GUIItem(icon.get(viewer)) {

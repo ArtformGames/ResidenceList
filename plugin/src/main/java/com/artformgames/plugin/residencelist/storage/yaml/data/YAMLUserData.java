@@ -1,6 +1,6 @@
 package com.artformgames.plugin.residencelist.storage.yaml.data;
 
-import cc.carm.lib.easyplugin.user.UserData;
+import cc.carm.lib.easyplugin.user.AbstractUserData;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class YAMLUserData extends UserData<UUID> implements UserListData {
+public class YAMLUserData extends AbstractUserData<UUID> implements UserListData {
 
     protected @NotNull ArrayList<String> pined;
     protected @NotNull SortFunctions sortFunction;
@@ -22,6 +22,11 @@ public class YAMLUserData extends UserData<UUID> implements UserListData {
         this.pined = pined;
         this.sortFunction = sort;
         this.reversed = reversed;
+    }
+
+    @Override
+    public @NotNull UUID key() {
+        return this.key;
     }
 
     @Override

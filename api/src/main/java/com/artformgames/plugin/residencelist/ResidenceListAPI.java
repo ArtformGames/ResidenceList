@@ -1,8 +1,9 @@
 package com.artformgames.plugin.residencelist;
 
+import cc.carm.lib.easyplugin.user.UserDataRegistry;
 import com.artformgames.plugin.residencelist.api.ResidenceManager;
-import com.artformgames.plugin.residencelist.api.UserManager;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
+import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
@@ -18,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class ResidenceListAPI {
 
@@ -69,7 +71,7 @@ public class ResidenceListAPI {
         return plugin().getResidenceManager();
     }
 
-    public static UserManager<?> getUserManager() {
+    public static UserDataRegistry<UUID, ? extends UserListData> getUserManager() {
         return plugin().getUserManager();
     }
 

@@ -30,16 +30,22 @@ import java.util.List;
 public class ResidenceListUI extends AutoPagedGUI {
 
     public static void open(@NotNull Player player, @Nullable String owner) {
-        new ResidenceListUI(player, owner).openGUI(player);
+        UserListData data = ResidenceListAPI.getUserManager().getNullable(player.getUniqueId());
+        if (data == null) {
+            PluginMessages.LOAD_FAILED.sendTo(player);
+            return;
+        }
+        new ResidenceListUI(player, data, owner).openGUI(player);
     }
 
-    protected @NotNull Player viewer;
-
+    protected final @NotNull Player viewer;
+    protected final @NotNull UserListData data;
     protected @Nullable String owner;
 
-    public ResidenceListUI(@NotNull Player viewer, @Nullable String owner) {
+    public ResidenceListUI(@NotNull Player viewer, @NotNull UserListData data, @Nullable String owner) {
         super(GUIType.SIX_BY_NINE, "", 10, 34);
         this.viewer = viewer;
+        this.data = data;
         this.owner = owner;
 
         setPreviousPageSlot(47);
@@ -59,8 +65,8 @@ public class ResidenceListUI extends AutoPagedGUI {
         return viewer;
     }
 
-    public UserListData getPlayerData() {
-        return Main.getInstance().getUserManager().get(getViewer());
+    public @NotNull UserListData getPlayerData() {
+        return data;
     }
 
     public boolean checkOwner(ClaimedResidence residence) {

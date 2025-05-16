@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.artformgames</groupId>
         <artifactId>residencelist-parent</artifactId>
-        <version>1.3.2</version>
+        <version>1.3.3</version>
     </parent>
     <properties>
         <maven.compiler.source>${project.jdk.version}</maven.compiler.source>
