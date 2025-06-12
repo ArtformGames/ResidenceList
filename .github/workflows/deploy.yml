@@ -65,4 +65,4 @@ jobs:
             placeholderapi(recommended)
 
       - name: Update dependency graph
-        uses: advanced-security/maven-dependency-submission-action@4b6fc92adc1df4c41b470e692a1688a448907248
+        uses: advanced-security/maven-dependency-submission-action@df268dd1684fb95352aa463056e3cf41f9acb94b
