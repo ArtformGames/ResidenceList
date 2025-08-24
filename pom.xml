@@ -78,10 +78,10 @@
 
     <repositories>
 
-<!--        <repository>-->
-<!--            <id>jitpack.io</id>-->
-<!--            <url>https://jitpack.io</url>-->
-<!--        </repository>-->
+        <!--        <repository>-->
+        <!--            <id>jitpack.io</id>-->
+        <!--            <url>https://jitpack.io</url>-->
+        <!--        </repository>-->
 
         <repository>
             <id>codecrafter47-repo</id>
@@ -91,6 +91,16 @@
         <repository>
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/releases/</url>
+        </repository>
+
+        <repository>
+            <id>EasyPlugin-Repo</id>
+            <url>https://raw.githubusercontent.com/CarmJos/EasyPlugin/repo/</url>
         </repository>
 
         <repository>
