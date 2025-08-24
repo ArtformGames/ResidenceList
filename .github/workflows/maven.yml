@@ -20,7 +20,7 @@ jobs:
         with:
           java-version: '18'
           distribution: 'adopt'
-          cache: maven
+#          cache: maven
 
       - name: "Package"
         run: mvn -B package --file pom.xml
