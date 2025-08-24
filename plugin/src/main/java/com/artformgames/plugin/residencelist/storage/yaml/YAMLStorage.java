@@ -94,7 +94,7 @@ public class YAMLStorage extends UserDataManager<UUID, YAMLUserData>
 
     @Override
     protected void saveData(@NotNull YAMLUserData data) throws Exception {
-        File userFile = new File(this.userDataFolder, data.getKey() + ".yaml");
+        File userFile = new File(this.userDataFolder, data.key() + ".yaml");
         if (data.isEmpty() && userFile.exists()) {
             userFile.delete(); // Delete empty data files.
             return;
