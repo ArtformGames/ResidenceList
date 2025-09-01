@@ -55,8 +55,20 @@ public class ResidenceListAPI {
     }
 
     @Unmodifiable
+    public static @NotNull Map<String, ClaimedResidence> getResidences(@Nullable Player viewer) {
+        if (viewer == null) return getResidences();
+        return Collections.unmodifiableMap(Residence.getInstance().getPlayerManager().getResidencesMap(
+                viewer.getName(), false, false, null
+        ));
+    }
+
+    @Unmodifiable
     public static @NotNull Set<ClaimedResidence> listResidences() {
         return Set.copyOf(getResidences().values());
+    }
+    @Unmodifiable
+    public static @NotNull Set<ClaimedResidence> listResidences(@Nullable Player viewer) {
+        return Set.copyOf(getResidences(viewer).values());
     }
 
     public static DataStorage<?, ?> getStorage() {

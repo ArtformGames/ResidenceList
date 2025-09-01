@@ -135,7 +135,7 @@ public class ResidenceListUI extends AutoPagedGUI {
                 .map(ResidenceListAPI::getResidence)
                 .filter(residence -> residence != null && checkOwner(residence))
                 .sorted(comparator).forEach(display::add);
-        ResidenceListAPI.listResidences().stream()
+        ResidenceListAPI.listResidences(this.viewer).stream()
                 .filter(residence -> !display.contains(residence) && checkOwner(residence))
                 .sorted(comparator).forEach(display::add);
 

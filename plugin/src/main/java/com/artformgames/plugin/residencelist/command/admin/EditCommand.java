@@ -47,7 +47,7 @@ public class EditCommand extends SubCommand<AdminCommands> {
         if (args.length == 1) {
             return SimpleCompleter.objects(
                     args[args.length - 1],
-                    ResidenceListAPI.getResidences()
+                    ResidenceListAPI.getResidences(sender instanceof Player ? (Player) sender : null)
                             .values().stream().map(ClaimedResidence::getName)
             );
         } else return SimpleCompleter.none();

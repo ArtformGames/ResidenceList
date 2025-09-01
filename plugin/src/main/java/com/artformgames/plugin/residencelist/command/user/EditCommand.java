@@ -52,7 +52,7 @@ public class EditCommand extends SubCommand<UserCommands> {
         if (args.length == 1) {
             return SimpleCompleter.objects(
                     args[args.length - 1],
-                    ResidenceListAPI.getResidences()
+                    ResidenceListAPI.getResidences(sender instanceof Player ? (Player) sender : null)
                             .values().stream()
                             .filter(r -> r.isOwner(sender))
                             .map(ClaimedResidence::getName)
