@@ -6,6 +6,8 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.bekvon.bukkit.residence.Residence;
+import com.bekvon.bukkit.residence.containers.Flags;
+import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,10 +18,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class ResidenceListAPI {
 
@@ -57,15 +56,26 @@ public class ResidenceListAPI {
     @Unmodifiable
     public static @NotNull Map<String, ClaimedResidence> getResidences(@Nullable Player viewer) {
         if (viewer == null) return getResidences();
-        return Collections.unmodifiableMap(Residence.getInstance().getPlayerManager().getResidencesMap(
-                viewer.getName(), false, false, null
-        ));
+
+        ResidencePlayer resPlayer = Residence.getInstance().getPlayerManager().getResidencePlayer(viewer);
+        if (resPlayer == null) return getResidences();
+
+        Map<String, ClaimedResidence> temp = new LinkedHashMap<>();
+
+        for (Map.Entry<String, ClaimedResidence> entry : Residence.getInstance().getResidenceManager().getResidences().entrySet()) {
+            ClaimedResidence res = entry.getValue();
+            if (!res.isOwner(viewer) && res.getPermissions().has(Flags.hidden, false)) continue;
+            temp.put(entry.getKey(), res);
+        }
+
+        return Collections.unmodifiableMap(temp);
     }
 
     @Unmodifiable
     public static @NotNull Set<ClaimedResidence> listResidences() {
         return Set.copyOf(getResidences().values());
     }
+
     @Unmodifiable
     public static @NotNull Set<ClaimedResidence> listResidences(@Nullable Player viewer) {
         return Set.copyOf(getResidences(viewer).values());
