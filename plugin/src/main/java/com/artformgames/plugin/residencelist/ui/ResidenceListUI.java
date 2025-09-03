@@ -15,6 +15,7 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
+import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -133,10 +134,13 @@ public class ResidenceListUI extends AutoPagedGUI {
 
         data.getPinned().stream()
                 .map(ResidenceListAPI::getResidence)
-                .filter(residence -> residence != null && checkOwner(residence))
+                .filter(res -> res != null && checkOwner(res))
+                .filter(res -> ResidenceUtils.viewable(res, viewer))
                 .sorted(comparator).forEach(display::add);
-        ResidenceListAPI.listResidences(this.viewer).stream()
-                .filter(residence -> !display.contains(residence) && checkOwner(residence))
+        ResidenceListAPI.listResidences().stream()
+                .filter(res -> !display.contains(res))
+                .filter(this::checkOwner)
+                .filter(res -> ResidenceUtils.viewable(res, viewer))
                 .sorted(comparator).forEach(display::add);
 
         display.stream().filter(r -> {

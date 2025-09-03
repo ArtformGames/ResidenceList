@@ -3,7 +3,6 @@ package com.artformgames.plugin.residencelist.api.residence;
 import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -59,15 +58,9 @@ public interface ResidenceData {
         setDescription(List.of(descriptions));
     }
 
-
     boolean isPublicDisplayed();
 
-    default void setPublicDisplayed(boolean publicDisplayed) {
-        getResidence().getPermissions().setFlag(
-                Flags.hidden.getName(),
-                publicDisplayed ? FlagPermissions.FlagState.FALSE : FlagPermissions.FlagState.TRUE
-        );
-    }
+    void setPublicDisplayed(boolean enabled);
 
     Map<UUID, ResidenceRate> getRates();
 

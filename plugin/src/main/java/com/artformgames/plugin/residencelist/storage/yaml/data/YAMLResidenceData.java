@@ -6,6 +6,7 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
+import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -109,7 +110,15 @@ public class YAMLResidenceData implements ResidenceData {
 
     @Override
     public boolean isPublicDisplayed() {
-        return getResidence().getPermissions().has(Flags.hidden, !PluginConfig.SETTINGS.DEFAULT_STATUS.resolve(), false);
+        return !getResidence().getPermissions().has(Flags.hidden, !PluginConfig.SETTINGS.DEFAULT_STATUS.resolve());
+    }
+
+    @Override
+    public void setPublicDisplayed(boolean enabled) {
+        getResidence().getPermissions().setFlag(
+                Flags.hidden.getName(),
+                enabled ? FlagPermissions.FlagState.FALSE : FlagPermissions.FlagState.TRUE
+        );
     }
 
     public Map<UUID, ResidenceRate> getRates() {
