@@ -116,7 +116,7 @@ public class YAMLResidenceData implements ResidenceData {
     @Override
     public void setPublicDisplayed(boolean enabled) {
         getResidence().getPermissions().setFlag(
-                Flags.hidden.getName(),
+                Flags.hidden.name(),
                 enabled ? FlagPermissions.FlagState.FALSE : FlagPermissions.FlagState.TRUE
         );
     }
