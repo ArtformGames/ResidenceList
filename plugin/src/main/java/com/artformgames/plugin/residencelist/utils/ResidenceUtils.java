@@ -13,8 +13,9 @@ public class ResidenceUtils {
     private static final UUID TEMP_UUID = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
 
     public static boolean isServerLand(ClaimedResidence residence) {
-        return Residence.getInstance().getServerUUID().equals(residence.getOwnerUUID())
-                || TEMP_UUID.equals(residence.getOwnerUUID());
+        return residence.getOwnerUUID() == null
+                || TEMP_UUID.equals(residence.getOwnerUUID())
+                || Residence.getInstance().getServerUUID().equals(residence.getOwnerUUID());
     }
 
     public static boolean hiddenDefault() {
