@@ -7,10 +7,14 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 public class ResidenceUtils {
+    private static final UUID TEMP_UUID = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+
     public static boolean isServerLand(ClaimedResidence residence) {
         return Residence.getInstance().getServerUUID().equals(residence.getOwnerUUID())
-                || Residence.getInstance().getEmptyUserUUID().equals(residence.getOwnerUUID());
+                || TEMP_UUID.equals(residence.getOwnerUUID());
     }
 
     public static boolean hiddenDefault() {
