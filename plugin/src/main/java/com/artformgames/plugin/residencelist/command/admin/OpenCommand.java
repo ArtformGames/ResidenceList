@@ -7,7 +7,6 @@ import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.ui.admin.ResidenceAdminUI;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,9 +29,9 @@ public class OpenCommand extends SubCommand<AdminCommands> {
             return null;
         }
 
-        OfflinePlayer owner = null;
+        Player owner = null;
         if (args.length > 0) {
-            owner = Arrays.stream(Bukkit.getOfflinePlayers())
+        owner = Bukkit.getOnlinePlayers().stream()
                     .filter(s -> s.getName() != null && s.getName().equals(args[0]))
                     .findFirst().orElse(null);
             if (owner == null) {
@@ -41,7 +40,7 @@ public class OpenCommand extends SubCommand<AdminCommands> {
             }
         }
 
-        ResidenceAdminUI.open(player, Optional.ofNullable(owner).map(OfflinePlayer::getName).orElse(null));
+        ResidenceAdminUI.open(player, Optional.ofNullable(owner).map(Player::getName).orElse(null));
         PluginConfig.GUI.OPEN_SOUND.playTo(player);
 
         return null;
@@ -50,7 +49,7 @@ public class OpenCommand extends SubCommand<AdminCommands> {
     @Override
     public List<String> tabComplete(JavaPlugin plugin, CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return SimpleCompleter.allPlayers(args[args.length - 1], 10);
+            return SimpleCompleter.onlinePlayers(args[args.length - 1], 10);
         } else return SimpleCompleter.none();
     }
 }
