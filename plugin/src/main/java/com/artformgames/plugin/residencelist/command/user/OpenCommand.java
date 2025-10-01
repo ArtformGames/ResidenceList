@@ -50,7 +50,7 @@ public class OpenCommand extends SubCommand<UserCommands> {
     @Override
     public List<String> tabComplete(JavaPlugin plugin, CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return SimpleCompleter.allPlayers(args[args.length - 1], 10);
+            return SimpleCompleter.onlinePlayers(args[args.length - 1], 10);
         } else return SimpleCompleter.none();
     }
 }

@@ -149,8 +149,10 @@ public class ResidenceListUI extends AutoPagedGUI {
         }).forEach(residence -> addItem(generateIcon(getViewer(), this, owner, data, residence)));
     }
 
-    protected static GUIItem generateIcon(Player viewer, GUI previous, String filterOwner,
-                                          UserListData userData, ClaimedResidence residence) {
+    protected static GUIItem generateIcon(
+            Player viewer, GUI previous, String filterOwner,
+            UserListData userData, ClaimedResidence residence
+    ) {
         ResidenceData data = Main.getInstance().getResidenceManager().getResidence(residence);
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 data.getDisplayName(), data.getOwner(),
