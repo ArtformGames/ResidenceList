@@ -164,7 +164,9 @@ public class ResidenceListUI extends AutoPagedGUI {
         } else {
             icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.NORMAL);
         }
-        if (!data.getDescription().isEmpty()) icon.insert("description", data.getDescription());
+        if (!data.getDescription().isEmpty()) {
+            icon.insert("description", data.getDescription());
+        }
         if (userData.isPinned(residence.getName())) {
             icon.glow();
         }

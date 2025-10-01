@@ -207,7 +207,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         ClaimedResidence residence = getResidenceData().getResidence();
         if (!ResidenceUtils.isServerLand(getResidenceData().getResidence())) {
             addItem(new GUIItem(CONFIG.ITEMS.OWNER.prepare(getResidenceData().getOwner())
-                    .setSkullOwner(getResidenceData().getResidence().getOwnerUUID())
+                    .setSkullOwner(getResidenceData().getOwner())
                     .get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
