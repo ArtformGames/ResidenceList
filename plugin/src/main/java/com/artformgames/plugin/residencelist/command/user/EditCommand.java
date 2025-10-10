@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class EditCommand extends SubCommand<UserCommands> {
 
@@ -38,7 +39,7 @@ public class EditCommand extends SubCommand<UserCommands> {
 
         ResidenceData data = ResidenceListAPI.getResidenceData(residence);
         if (!residence.isOwner(player)) {
-            PluginMessages.COMMAND.NOT_OWNER.sendTo(sender, residence.getName(), data.getDisplayName());
+            PluginMessages.COMMAND.NOT_OWNER.sendTo(sender, Pattern.quote(residence.getName()), data.getDisplayName());
             return null;
         }
 

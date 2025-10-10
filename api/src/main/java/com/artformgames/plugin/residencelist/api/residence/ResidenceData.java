@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public interface ResidenceData {
 
@@ -42,7 +43,7 @@ public interface ResidenceData {
     void setIconMaterial(@NotNull Material material, int customModelData);
 
     default @NotNull String getDisplayName() {
-        return Optional.ofNullable(getAliasName()).orElse(getName());
+        return Pattern.quote(Optional.ofNullable(getAliasName()).orElse(getName()));
     }
 
     @Nullable String getAliasName();
