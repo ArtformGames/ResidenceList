@@ -19,6 +19,6 @@ projects: ["ArtformGames/3"]
 
 <!--Any screenshots or example codes please.-->
 
-### **AddItional details**
+### **AddNational details**
 
 <!--If there are any small details that need to be highlighted, please let us know here.-->

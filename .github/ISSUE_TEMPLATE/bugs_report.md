@@ -11,7 +11,7 @@ projects: ["ArtformGames/3"]
 
 <!-- Describe the general problem in short words.-->
 
-### **Operatios**
+### **Operations**
 
 <!-- 
 Describe the problem discovered through what operations, such as:
