@@ -15,7 +15,7 @@
         <deps.easyplugin.version>1.5.14</deps.easyplugin.version>
         <deps.mineconfig.version>3.1.3</deps.mineconfig.version>
         <deps.minedown.version>1.7.1-SNAPSHOT</deps.minedown.version>
-        <deps.xseries.version>13.5.1</deps.xseries.version>
+        <deps.xseries.version>13.6.0</deps.xseries.version>
     </properties>
     <groupId>com.artformgames</groupId>
     <artifactId>residencelist-parent</artifactId>
