@@ -55,6 +55,9 @@ public interface PluginConfig extends Configuration {
         @HeaderComments("Default residence status (Public = true / Private = false)")
         ConfiguredValue<Boolean> DEFAULT_STATUS = ConfiguredValue.of(Boolean.class, true);
 
+        @HeaderComments("Allow residence owners to delete visitors' rates.")
+        ConfiguredValue<Boolean> ALLOW_OWNER_DELETE_RATE = ConfiguredValue.of(Boolean.class, false);
+
         @HeaderComments("How many letters are displayed per line in the residence description.")
         ConfiguredValue<Integer> LETTERS_PRE_LINE = ConfiguredValue.of(Integer.class, 35);
 

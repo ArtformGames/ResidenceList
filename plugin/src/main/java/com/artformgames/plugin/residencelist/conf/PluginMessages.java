@@ -147,6 +147,16 @@ public interface PluginMessages extends Configuration {
                         "&fYou are commenting for residence &e%(residence)&f, please enter your comment in chat.",
                         "&fYou can enter '&e#cancel&f' to cancel this operation."
                 ).params("residence").build();
+
+        ConfiguredMessage<BaseComponent[]> NOT_RATED = value()
+                .defaults(
+                        "&fYou have not rated residence &e%(residence)&f yet, please rate it first!"
+                ).params("residence").build();
+        ConfiguredMessage<BaseComponent[]> REMOVED = value()
+                .defaults(
+                        "&fYou have successfully removed your comment for residence &e%(residence)&f!"
+                ).params("residence").build();
+
     }
 
     interface EDIT extends Configuration {

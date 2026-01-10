@@ -138,6 +138,18 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             public void onClick(Player clicker, ClickType type) {
                 if (!(type.isLeftClick() || type.isRightClick())) return;
                 clicker.closeInventory();
+
+                if (type.isShiftClick()) {
+                    // Delete the comment
+                    if (rated == null) {
+                        PluginMessages.COMMENT.NOT_RATED.sendTo(clicker, getResidenceData().getDisplayName());
+                    } else {
+                        getResidenceData().removeRate(getViewer().getUniqueId());
+                        PluginMessages.COMMENT.REMOVED.sendTo(clicker, getResidenceData().getDisplayName());
+                    }
+                    return;
+                }
+
                 boolean recommend = type.isLeftClick();
                 PluginMessages.COMMENT.NOTIFY.sendTo(clicker, getResidenceData().getDisplayName());
                 PluginMessages.COMMENT.ASK_SOUND.playTo(clicker);
@@ -365,7 +377,8 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             "&7You can still update your comment.",
                             "&7",
                             "&a ▶ LClick &8|&f Like && comment.",
-                            "&a ▶ RClick &8|&f Dislike && comment."
+                            "&a ▶ RClick &8|&f Dislike && comment.",
+                            "&c ▶ Shift+Click &8|&f Remove your comment."
                     ).params("date").build();
 
             ConfiguredItem EMPTY = ConfiguredItem.create()

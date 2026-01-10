@@ -201,13 +201,13 @@ public class ResidenceManageUI extends AutoPagedGUI {
             );
             preparedItem.setSkullOwner(value.author());
             preparedItem.insert("comment", GUIUtils.sortContent(value.content()));
-            if (getViewer().hasPermission("residence.admin")) {
+            if (allowDeletion(getViewer())) {
                 preparedItem.insert("click-lore", CONFIG.ADDITIONAL_LORE.REMOVE);
             }
             addItem(new GUIItem(preparedItem.get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
-                    if (getViewer().hasPermission("residence.admin")) {
+                    if (allowDeletion(getViewer())) {
                         getResidenceData().removeRate(value.author());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
                         open(getViewer(), residenceData, previousGUI);
@@ -215,6 +215,16 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 }
             });
         }
+    }
+
+    public boolean allowDeletion(@NotNull Player player) {
+        if (getViewer().hasPermission("residence.admin")) return true;
+
+        if (PluginConfig.SETTINGS.ALLOW_OWNER_DELETE_RATE.resolve()) {
+            return residenceData.isOwner(player);
+        }
+
+        return false;
     }
 
     protected GUIItem generateIcon(UserListData userData, ClaimedResidence residence) {
