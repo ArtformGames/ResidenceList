@@ -13,6 +13,7 @@ import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.listener.ResidenceListener;
 import com.artformgames.plugin.residencelist.listener.UserListener;
 import com.artformgames.plugin.residencelist.storage.DataStorage;
+import com.artformgames.plugin.residencelist.storage.sql.MySQLStorage;
 import com.artformgames.plugin.residencelist.storage.yaml.YAMLStorage;
 import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
 import com.artformgames.plugin.residencelist.utils.GHUpdateChecker;
@@ -21,6 +22,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Locale;
 
 public class Main extends EasyPlugin implements ResidenceListPlugin {
     private static Main instance;
@@ -46,17 +49,57 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
     protected boolean initialize() {
         if (this.storage == null) {
             log("Initialize data storage..."); // Supporting custom storages.
-            this.storage = new YAMLStorage(this);
+            String type = PluginConfig.STORAGE.TYPE.getNotNull().toUpperCase(Locale.ROOT);
+            switch (type) {
+                case "YAML" -> this.storage = new YAMLStorage(this);
+                case "MYSQL" -> this.storage = new MySQLStorage(this);
+                default -> {
+                    error("Unknown storage type: " + type + ". Expected YAML or MYSQL.");
+                    return false;
+                }
+            }
         }
 
         log("Loading storage data...");
-        this.storage.initialize();
+        try {
+            this.storage.initializeAsync().whenComplete((unused, failure) -> {
+                if (!isEnabled()) return;
+                Runnable complete = () -> {
+                    if (!isEnabled()) return;
+                    if (failure != null) {
+                        error("Could not initialize data storage: " + failure.getMessage());
+                        failure.printStackTrace();
+                        Bukkit.getPluginManager().disablePlugin(this);
+                        return;
+                    }
+                    try {
+                        finishInitialize();
+                    } catch (Exception exception) {
+                        error("Could not finish plugin initialization: " + exception.getMessage());
+                        exception.printStackTrace();
+                        Bukkit.getPluginManager().disablePlugin(this);
+                    }
+                };
+                if (Bukkit.isPrimaryThread()) complete.run();
+                else getScheduler().run(complete);
+            });
+        } catch (Exception exception) {
+            error("Could not start data storage: " + exception.getMessage());
+            exception.printStackTrace();
+            return false;
+        }
 
+        return true;
+    }
+
+    protected void finishInitialize() {
         log("Register listeners...");
         GUI.initialize(this);
         registerListener(new EditHandler());
         registerListener(new ResidenceListener());
-        registerListener(new UserListener());
+        UserListener users = new UserListener();
+        registerListener(users);
+        users.loadOnlineUsers();
 
         log("Register commands...");
         registerCommand("ResidenceList", new UserCommands(this));
@@ -81,7 +124,6 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
             log("Version checker is disabled, skipped.");
         }
 
-        return true;
     }
 
     @Override
@@ -89,7 +131,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         GUI.closeAll();
 
         log("Saving all data to storage...");
-        this.storage.shutdown();
+        if (this.storage != null) this.storage.shutdown();
 
     }
 

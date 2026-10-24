@@ -144,7 +144,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                     if (rated == null) {
                         PluginMessages.COMMENT.NOT_RATED.sendTo(clicker, getResidenceData().getDisplayName());
                     } else {
-                        getResidenceData().removeRate(getViewer().getUniqueId());
+                        getResidenceData().modify(d -> d.removeRate(getViewer().getUniqueId()));
                         PluginMessages.COMMENT.REMOVED.sendTo(clicker, getResidenceData().getDisplayName());
                     }
                     return;

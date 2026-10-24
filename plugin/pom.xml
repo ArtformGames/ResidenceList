@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.artformgames</groupId>
         <artifactId>residencelist-parent</artifactId>
-        <version>1.3.8</version>
+        <version>1.4.0</version>
     </parent>
     <properties>
         <maven.compiler.source>${project.jdk.version}</maven.compiler.source>
@@ -111,6 +111,50 @@
         </dependency>
 
         <dependency>
+            <groupId>cc.carm.lib</groupId>
+            <artifactId>easysql-beecp</artifactId>
+            <version>${deps.easysql.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>cc.carm.lib</groupId>
+                    <artifactId>easysql-impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>cc.carm.lib</groupId>
+            <artifactId>easysql-api</artifactId>
+            <version>${deps.easysql.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.18.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.3.232</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>de.themoep</groupId>
             <artifactId>minedown</artifactId>
             <version>1.7.1-SNAPSHOT</version>
@@ -173,10 +217,20 @@
                     </relocations>
                     <filters>
                         <filter>
+                            <artifact>cc.carm.lib:githubreleases4j</artifact>
+                            <excludes>
+                                <exclude>org/json/**</exclude>
+                                <exclude>META-INF/maven/org.json/**</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
                             <artifact>*:*</artifact>
                             <excludes>
                                 <exclude>META-INF/MANIFEST.MF</exclude>
                                 <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
                             </excludes>
                         </filter>
                     </filters>

@@ -208,7 +208,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     if (allowDeletion(getViewer())) {
-                        getResidenceData().removeRate(value.author());
+                        getResidenceData().modify(d -> d.removeRate(value.author()));
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
                         open(getViewer(), residenceData, previousGUI);
                     }

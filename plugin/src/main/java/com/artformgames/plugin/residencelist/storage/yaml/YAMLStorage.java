@@ -1,240 +1,213 @@
 package com.artformgames.plugin.residencelist.storage.yaml;
 
 import cc.carm.lib.easyplugin.EasyPlugin;
-import cc.carm.lib.easyplugin.user.UserDataManager;
-import com.artformgames.plugin.residencelist.Main;
-import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
+import com.artformgames.plugin.residencelist.ResidenceListAPI;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
-import com.artformgames.plugin.residencelist.conf.PluginConfig;
-import com.artformgames.plugin.residencelist.storage.DataStorage;
-import com.artformgames.plugin.residencelist.storage.yaml.data.YAMLResidenceData;
-import com.artformgames.plugin.residencelist.storage.yaml.data.YAMLUserData;
-import com.bekvon.bukkit.residence.Residence;
-import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import org.bukkit.Bukkit;
+import com.artformgames.plugin.residencelist.storage.AbstractStorage;
+import com.artformgames.plugin.residencelist.storage.data.CachedUserData;
+import com.artformgames.plugin.residencelist.storage.data.ResidenceSnapshot;
+import com.artformgames.plugin.residencelist.storage.data.UserSnapshot;
+import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
 
-public class YAMLStorage extends UserDataManager<UUID, YAMLUserData>
-        implements DataStorage<YAMLUserData, YAMLResidenceData> {
+/**
+ * Filesystem implementation of the storage IO hooks. All hooks run on AbstractStorage's IO worker.
+ */
+public class YAMLStorage extends AbstractStorage {
 
     public static final String USER_DATA_FOLDER = "users";
     public static final String RESIDENCE_DATA_FOLDER = "residences";
 
-    protected final @NotNull File userDataFolder;
-    protected final @NotNull File residenceDataFolder;
-    protected Map<String, YAMLResidenceData> residences = new HashMap<>();
+    private final Path userDataFolder;
+    private final Path residenceDataFolder;
 
     public YAMLStorage(@NotNull EasyPlugin plugin) {
         super(plugin);
-        this.residenceDataFolder = initializeFolder(plugin.getDataFolder(), RESIDENCE_DATA_FOLDER);
-        this.userDataFolder = initializeFolder(plugin.getDataFolder(), USER_DATA_FOLDER);
+        Path dataFolder = plugin.getDataFolder().toPath();
+        this.userDataFolder = dataFolder.resolve(USER_DATA_FOLDER);
+        this.residenceDataFolder = dataFolder.resolve(RESIDENCE_DATA_FOLDER);
     }
 
     @Override
-    public void initialize() {
+    protected void openStorage() throws IOException {
+        Files.createDirectories(userDataFolder);
+        Files.createDirectories(residenceDataFolder);
+    }
 
-        int loaded = loadAllResidences();
-        plugin.log("Successfully loaded " + loaded + " residence data.");
-
-        if (!Bukkit.getOnlinePlayers().isEmpty()) {
-            plugin.log("Load online users' data...");
-            loadOnline(Player::getUniqueId);
+    @Override
+    protected @NotNull Map<String, ResidenceSnapshot> readResidences() throws Exception {
+        Map<String, ResidenceSnapshot> result = new LinkedHashMap<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(residenceDataFolder, "*.yaml")) {
+            for (Path file : stream) {
+                if (!Files.isRegularFile(file)) continue;
+                String fileName = file.getFileName().toString();
+                String name = fileName.substring(0, fileName.length() - ".yaml".length());
+                if (name.isBlank()) throw new IOException("Invalid residence data file: " + file);
+                result.put(name, readResidence(file));
+            }
         }
-
+        return result;
     }
 
     @Override
-    public void shutdown() {
-        saveAll();
-        saveAllResidences();
-        super.shutdown();
+    protected @Nullable CachedUserData readUser(@NotNull UUID key) throws Exception {
+        Path file = userFile(key);
+        if (!Files.exists(file)) return null;
+        return new CachedUserData(readUserFile(file, key));
+    }
+
+    static UserSnapshot readUserFile(Path file, UUID key) throws Exception {
+        YamlConfiguration conf = readYaml(file);
+        requireStringList(conf, "pinned", file);
+        requireType(conf, "sort", conf.isInt("sort"), file);
+        requireType(conf, "reversed", conf.isBoolean("reversed"), file);
+        return new UserSnapshot(key, new ArrayList<>(conf.getStringList("pinned")),
+                SortFunctions.parse(conf.getInt("sort", 0)), conf.getBoolean("reversed", false));
     }
 
     @Override
-    public @NotNull Map<UUID, YAMLUserData> cache() {
-        return this.dataCache;
-    }
-
-    protected File initializeFolder(File parent, String folderName) {
-        File folder = new File(parent, folderName);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        } else if (!folder.isDirectory()) {
-            folder.delete();
-            folder.mkdirs();
+    protected void writeUsers(@NotNull List<UserSnapshot> users) throws Exception {
+        for (UserSnapshot user : users) {
+            writeUserFile(userFile(user.key()), user);
         }
-        return folder;
     }
 
-    @Override
-    public @NotNull YAMLUserData emptyUser(@NotNull UUID key) {
-        return new YAMLUserData(key, new ArrayList<>(), SortFunctions.NAME, false);
-    }
-
-    @Override
-    protected @Nullable YAMLUserData loadData(@NotNull UUID key) {
-        File userFile = new File(this.userDataFolder, key + ".yaml");
-        if (!userFile.exists()) return null; // No data files.
-
-        YamlConfiguration conf = YamlConfiguration.loadConfiguration(userFile);
-        return new YAMLUserData(
-                key, new ArrayList<>(conf.getStringList("pinned")),
-                SortFunctions.parse(conf.getInt("sort", 0)),
-                conf.getBoolean("reversed", false)
-        );
-    }
-
-    @Override
-    protected void saveData(@NotNull YAMLUserData data) throws Exception {
-        File userFile = new File(this.userDataFolder, data.key() + ".yaml");
-        if (data.isEmpty() && userFile.exists()) {
-            userFile.delete(); // Delete empty data files.
+    static void writeUserFile(Path file, UserSnapshot user) throws Exception {
+        if (user.pinned().isEmpty() && user.sortFunction() == SortFunctions.NAME && !user.reversed()) {
+            Files.deleteIfExists(file);
             return;
         }
+        YamlConfiguration conf = Files.exists(file) ? readYaml(file) : new YamlConfiguration();
+        conf.set("pinned", user.pinned());
+        conf.set("sort", user.sortFunction() == SortFunctions.NAME ? null : user.sortFunction().ordinal());
+        conf.set("reversed", user.reversed() ? true : null);
+        writeYaml(file, conf);
+    }
 
-        YamlConfiguration conf;
-        if (userFile.exists()) {
-            conf = YamlConfiguration.loadConfiguration(userFile);
+    @Override
+    protected void writeResidences(@NotNull Map<String, ResidenceSnapshot> residences) throws Exception {
+        for (Map.Entry<String, ResidenceSnapshot> entry : residences.entrySet()) {
+            writeResidenceFile(residenceFile(entry.getKey()), entry.getValue());
+        }
+    }
+
+    static void writeResidenceFile(Path file, ResidenceSnapshot data) throws Exception {
+        YamlConfiguration conf = Files.exists(file) ? readYaml(file) : new YamlConfiguration();
+        if (data.icon() == null) {
+            conf.set("icon", null);
         } else {
-            conf = new YamlConfiguration();
+            String icon = XMaterial.matchXMaterial(data.icon()).name();
+            conf.set("icon", data.customModelData() > 0 ? icon + ":" + data.customModelData() : icon);
         }
+        conf.set("nickname", data.aliasName());
+        conf.set("description", data.description());
+        conf.set("rates", null);
+        data.rates().forEach((key, rate) -> conf.set("rates." + key, serializeRate(rate)));
+        writeYaml(file, conf);
+    }
 
-        conf.set("pinned", data.getPinned());
-        if (data.getSortFunction() != SortFunctions.NAME) {
-            conf.set("sort", data.getSortFunction().ordinal());
+    @Override
+    protected void deleteResidence(@NotNull String name) throws IOException {
+        Files.deleteIfExists(residenceFile(name));
+    }
+
+    private Path userFile(UUID key) {
+        return userDataFolder.resolve(key + ".yaml");
+    }
+
+    private Path residenceFile(String name) {
+        if (name.isBlank() || name.contains("/") || name.contains("\\") || name.equals(".") || name.equals("..")) {
+            throw new IllegalArgumentException("Invalid residence name for YAML storage: " + name);
         }
-        if (data.isSortReversed()) conf.set("reversed", true);
-        conf.save(userFile);
+        return residenceDataFolder.resolve(name + ".yaml");
     }
 
-    @Override
-    public @Unmodifiable @NotNull Set<YAMLResidenceData> listResidences() {
-        return Set.copyOf(this.residences.values());
+    private static YamlConfiguration readYaml(Path file) throws Exception {
+        YamlConfiguration conf = new YamlConfiguration();
+        conf.loadFromString(Files.readString(file, StandardCharsets.UTF_8));
+        return conf;
     }
 
-    @Override
-    public @Nullable YAMLResidenceData getResidence(@NotNull String name) {
-        ClaimedResidence residence = Residence.getInstance().getResidenceManager().getByName(name);
-        if (residence == null) return null;
-
-        YAMLResidenceData existed = this.residences.get(name);
-        if (existed != null) return existed;
-
-        File dataFile = new File(this.residenceDataFolder, residence.getName() + ".yaml");
-        YAMLResidenceData data = new YAMLResidenceData(dataFile, residence);
-        this.residences.put(residence.getName(), data);
-
-        return data;
-    }
-
-    public int loadAllResidences() {
-        String[] filesList = this.residenceDataFolder.list();
-        if (filesList == null || filesList.length < 1) return 0;
-
-        List<File> files = Arrays.stream(filesList)
-                .map(s -> new File(this.residenceDataFolder, s))
-                .filter(File::isFile).toList();
-
-        HashMap<String, YAMLResidenceData> loaded = new HashMap<>();
-
-        if (!files.isEmpty()) {
-            for (File file : files) {
-                String residenceName = file.getName().substring(0, file.getName().lastIndexOf("."));
-                try {
-                    YAMLResidenceData data = loadResidence(residenceName, file);
-                    Main.debugging("Successfully loaded residence data for '" + residenceName + "' !");
-                    loaded.put(residenceName, data);
-                } catch (Exception ex) {
-                    if (PluginConfig.SETTINGS.AUTO_REMOVE.getNotNull()) {
-                        file.delete();
-                        Main.info("Removed invalid residence data #" + file.getAbsolutePath() + " !");
-                    } else {
-                        Main.severe("Error occurred when loading residence data #" + file.getAbsolutePath() + " !");
-                        ex.printStackTrace();
-                    }
-                }
-            }
+    static ResidenceSnapshot readResidence(Path file) throws Exception {
+        YamlConfiguration conf = readYaml(file);
+        requireType(conf, "icon", conf.isString("icon"), file);
+        requireType(conf, "nickname", conf.isString("nickname"), file);
+        requireStringList(conf, "description", file);
+        requireType(conf, "rates", conf.isConfigurationSection("rates"), file);
+        Material icon = null;
+        int customModelData = -1;
+        String iconText = conf.getString("icon");
+        if (iconText != null && !iconText.isBlank()) {
+            String[] parts = iconText.split(":", 2);
+            icon = XMaterial.matchXMaterial(parts[0]).map(XMaterial::parseMaterial)
+                    .orElseThrow(() -> new IOException("Unknown residence icon in " + file + ": " + parts[0]));
+            if (parts.length > 1) customModelData = Integer.parseInt(parts[1]);
         }
-
-        this.residences = loaded;
-        return loaded.size();
+        return new ResidenceSnapshot(icon, customModelData, conf.getString("nickname"),
+                new ArrayList<>(conf.getStringList("description")), readRates(conf.getConfigurationSection("rates"), file));
     }
 
-    public YAMLResidenceData loadResidence(String residenceName, File file) throws Exception {
-        ClaimedResidence residence = Residence.getInstance().getResidenceManager().getByName(residenceName);
-        if (residence == null) throw new Exception("Residence not found: " + residenceName);
-        return new YAMLResidenceData(file, residence);
+    private static Map<UUID, ResidenceRate> readRates(@Nullable ConfigurationSection root, Path file) throws IOException {
+        Map<UUID, ResidenceRate> rates = new LinkedHashMap<>();
+        if (root == null) return rates;
+        for (String key : root.getKeys(false)) {
+            ConfigurationSection section = root.getConfigurationSection(key);
+            if (section == null) throw new IllegalArgumentException("Invalid residence rate: " + key);
+            requireType(section, "time", section.isString("time"), file);
+            requireType(section, "content", section.isString("content"), file);
+            requireType(section, "recommend", section.isBoolean("recommend"), file);
+            UUID author = UUID.fromString(key);
+            String timeText = section.getString("time");
+            LocalDateTime time = timeText == null ? LocalDateTime.now() : ResidenceListAPI.parse(timeText);
+            rates.put(author, new ResidenceRate(author, section.getString("content", ""),
+                    section.getBoolean("recommend"), time));
+        }
+        return rates;
     }
 
-    @Override
-    public @NotNull YAMLResidenceData loadResidence(String residenceName) throws Exception {
-        ClaimedResidence residence = Residence.getInstance().getResidenceManager().getByName(residenceName);
-        if (residence == null) throw new Exception("Residence not found: " + residenceName);
-        return new YAMLResidenceData(new File(this.residenceDataFolder, residence.getName() + ".yaml"), residence);
+    private static void requireStringList(ConfigurationSection conf, String key, Path file) throws IOException {
+        if (!conf.contains(key)) return;
+        if (!conf.isList(key) || conf.getList(key).stream().anyMatch(value -> !(value instanceof String))) {
+            throw new IOException("Expected a list of strings at " + key + " in " + file);
+        }
     }
 
+    private static void requireType(ConfigurationSection conf, String key, boolean valid, Path file) throws IOException {
+        if (conf.contains(key) && !valid) throw new IOException("Invalid value at " + key + " in " + file);
+    }
 
-    @Override
-    public void renameResidence(String oldName, String newName) {
-        YAMLResidenceData data = this.residences.remove(oldName);
-        if (data == null) return; // No data for this residence yet.
+    private static Map<String, Object> serializeRate(ResidenceRate rate) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("time", ResidenceListAPI.format(rate.time()));
+        result.put("recommend", rate.recommend());
+        result.put("content", rate.content());
+        return result;
+    }
 
-        this.residences.put(newName, data);
-
-        File n = new File(this.residenceDataFolder, newName + ".yaml");
+    private static void writeYaml(Path file, YamlConfiguration conf) throws IOException {
+        Path temporary = Files.createTempFile(file.getParent(), file.getFileName().toString(), ".tmp");
+        boolean moved = false;
         try {
-            data.renameTo(n);
-            Main.debugging("Successfully renamed residence data for '" + oldName + "' to '" + newName + "' !");
-        } catch (Exception e) {
-            Main.severe("Error occurred when renaming residence data for '" + oldName + "' to '" + newName + "' !");
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void removeResidence(@NotNull String name) {
-        YAMLResidenceData data = this.residences.remove(name);
-        if (data == null) return; // No data for this residence yet.
-
-        try {
-            data.delete();
-            Main.debugging("Successfully removed residence data for '" + name + "' !");
-        } catch (Exception e) {
-            Main.severe("Error occurred when removing residence data for '" + name + "' !");
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public boolean updateResidence(@NotNull ResidenceData data,
-                                   @NotNull Consumer<ResidenceData> dataConsumer) {
-        dataConsumer.accept(data);
-        try {
-            data.save();
-        } catch (Exception e) {
-            Main.severe("Error occurred when saving residence data for '" + data.getName() + "' !");
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    @Override
-    public void saveAllResidences() {
-        for (ResidenceData data : this.residences.values()) {
+            Files.writeString(temporary, conf.saveToString(), StandardCharsets.UTF_8);
             try {
-                data.save();
-            } catch (Exception e) {
-                Main.severe("Error occurred when saving residence data for '" + data.getName() + "' !");
-                e.printStackTrace();
+                Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException ignored) {
+                Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
             }
+            moved = true;
+        } finally {
+            if (!moved) Files.deleteIfExists(temporary);
         }
     }
 }

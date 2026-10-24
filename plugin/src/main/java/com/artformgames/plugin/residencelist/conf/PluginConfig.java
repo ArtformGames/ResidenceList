@@ -43,6 +43,30 @@ public interface PluginConfig extends Configuration {
     })
     ConfiguredValue<Boolean> CHECK_UPDATE = ConfiguredValue.of(Boolean.class, true);
 
+    interface STORAGE extends Configuration {
+
+        @HeaderComments("Storage backend: YAML or MYSQL.")
+        ConfiguredValue<String> TYPE = ConfiguredValue.of(String.class, "YAML");
+
+        interface MYSQL extends Configuration {
+
+            ConfiguredValue<String> HOST = ConfiguredValue.of(String.class, "localhost");
+            ConfiguredValue<Integer> PORT = ConfiguredValue.of(Integer.class, 3306);
+            ConfiguredValue<String> DATABASE = ConfiguredValue.of(String.class, "residencelist");
+            ConfiguredValue<String> USERNAME = ConfiguredValue.of(String.class, "root");
+            ConfiguredValue<String> PASSWORD = ConfiguredValue.of(String.class, "");
+            @HeaderComments({
+                    "Identifies this server's residence rows in a shared MySQL database. Use a different ID for each server.",
+                    "If unset, empty or blank, the Minecraft server's listening port is used as the ID."
+            })
+            ConfiguredValue<String> SERVER_ID = ConfiguredValue.of(String.class, "");
+            @HeaderComments("Prefix for the users and residences tables. Only letters, digits and underscores are allowed.")
+            ConfiguredValue<String> TABLE_PREFIX = ConfiguredValue.of(String.class, "residencelist_");
+
+        }
+
+    }
+
 
     interface SETTINGS extends Configuration {
 

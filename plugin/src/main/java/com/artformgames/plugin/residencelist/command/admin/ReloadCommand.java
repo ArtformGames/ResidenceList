@@ -20,8 +20,16 @@ public class ReloadCommand extends SubCommand<AdminCommands> {
         try {
             PluginMessages.RELOAD.START.sendTo(sender);
             long s1 = System.currentTimeMillis();
-            Main.getInstance().getConfiguration().reload();
-            PluginMessages.RELOAD.SUCCESS.sendTo(sender, System.currentTimeMillis() - s1);
+            Main.getInstance().getScheduler().runAsync(() -> {
+                try {
+                    Main.getInstance().getConfiguration().reload();
+                    long elapsed = System.currentTimeMillis() - s1;
+                    PluginMessages.RELOAD.SUCCESS.sendTo(sender, elapsed);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    PluginMessages.RELOAD.FAILED.sendTo(sender);
+                }
+            });
         } catch (Exception e) {
             PluginMessages.RELOAD.FAILED.sendTo(sender);
             e.printStackTrace();

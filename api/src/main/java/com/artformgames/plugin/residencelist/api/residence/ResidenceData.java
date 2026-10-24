@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -119,10 +118,7 @@ public interface ResidenceData {
     default boolean checkPermission(Player player, Flags flags, boolean defaults) {
         return getResidence().getPermissions().playerHas(player, flags, defaults);
     }
-
-
-    void renameTo(@NotNull File newFile) throws Exception;
-
+    /** Queues a cached snapshot for persistence in built-in storages. Does not block on IO. */
     void save() throws Exception;
 
     default void modify(Consumer<ResidenceData> modifier) {

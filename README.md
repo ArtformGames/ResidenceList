@@ -97,6 +97,35 @@ You can find configuration translations at [ResidenceList-Translations](https://
 
 Will be generated on the first boot up.
 
+The default storage is YAML. To use MySQL, create the database and configure:
+
+```yaml
+storage:
+  type: MYSQL
+  mysql:
+    host: localhost
+    port: 3306
+    database: residencelist
+    username: residencelist
+    password: 'your-password'
+    server-id: survival
+    table-prefix: 'residencelist_'
+```
+
+Restart after changing storage settings. Servers sharing a database and table prefix share
+player settings by UUID; give each server a different `server-id` to isolate its residence
+metadata. If `server-id` is unset, empty or blank, the Minecraft server's listening port is used.
+User settings are loaded on login and saved on logout or shutdown; concurrent
+sessions use the last saved snapshot. Existing YAML files are preserved when switching
+backends, but are not automatically imported into MySQL.
+
+Both backends use cached metadata during gameplay and an ordered background IO worker for
+loads and saves. Initialization completes before commands and GUIs become available.
+Shutdown queues final snapshots and closes the database after pending writes finish.
+Integrations can use `DataStorage.flush()` to await persistence asynchronously; never join
+its future on the server thread. Configuration reload runs asynchronously through the plugin
+scheduler; result messages are sent on the server thread.
+
 ### Messages Configuration (`messages.yml`)
 
 Will be generated on the first boot up.
