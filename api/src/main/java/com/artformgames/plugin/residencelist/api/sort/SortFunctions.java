@@ -16,7 +16,8 @@ public enum SortFunctions {
     RATINGS(comparingData(d -> d.rateRatio(ResidenceRate::recommend), Double::compare)
             .thenComparing(d -> d.countRate(ResidenceRate::recommend), Integer::compare)
             .thenComparing(NAME.comparator)),
-    SIZE(comparingData(d -> d.getResidence().getMainArea().getSize(), Long::compare).thenComparing(NAME.comparator));
+    SIZE(comparingData(d -> d.getResidence().getMainArea().getSize(), Long::compare).thenComparing(NAME.comparator)),
+    VISITORS(comparingData(ResidenceData::getVisitorCount, Comparator.reverseOrder()).thenComparing(NAME.comparator));
 
     private final Comparator<ResidenceData> comparator;
 

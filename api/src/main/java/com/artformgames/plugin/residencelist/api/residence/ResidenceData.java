@@ -82,6 +82,31 @@ public interface ResidenceData {
 
     void removeRate(UUID author);
 
+    /** One immutable record per visitor UUID. Custom storages may opt into visitor tracking. */
+    @Unmodifiable
+    default @NotNull List<ResidenceVisitor> getVisitors() {
+        return List.of();
+    }
+
+    default int getVisitorCount() {
+        return getVisitors().size();
+    }
+
+    /** Returns unique players whose latest visit is on or after the given time. */
+    default @NotNull List<ResidenceVisitor> getVisitorsSince(@NotNull LocalDateTime since) {
+        return getVisitors().stream().filter(visitor -> !visitor.lastTime().isBefore(since)).toList();
+    }
+
+    /**
+     * Records a validated visitor in the cache only; use the Player overload to exclude the owner.
+     * Built-in storages batch visits periodically and at shutdown. Custom storages may override this.
+     */
+    default void recordVisit(@NotNull UUID uuid, @NotNull String name, @NotNull LocalDateTime time) { }
+
+    default void recordVisit(@NotNull Player player) {
+        if (!isOwner(player)) recordVisit(player.getUniqueId(), player.getName(), LocalDateTime.now());
+    }
+
     default String getName() {
         return getResidence().getName();
     }

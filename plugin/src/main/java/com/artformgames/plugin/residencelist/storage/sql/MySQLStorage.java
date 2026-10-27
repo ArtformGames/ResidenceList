@@ -6,6 +6,7 @@ import cc.carm.lib.easysql.api.SQLManager;
 import cc.carm.lib.easysql.api.SQLTable;
 import cc.carm.lib.easysql.api.table.NamedSQLTable;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceVisitor;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.storage.AbstractStorage;
@@ -16,6 +17,8 @@ import org.bukkit.Material;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -42,6 +45,14 @@ public class MySQLStorage extends AbstractStorage {
                 "`description` LONGTEXT NOT NULL",
                 "`rates` LONGTEXT NOT NULL",
                 "PRIMARY KEY (`server_id`, `name`)"
+        }),
+        VISITORS("visitors", new String[]{
+                "`server_id` VARCHAR(64) NOT NULL",
+                "`residence_name` VARCHAR(255) NOT NULL",
+                "`uuid` VARCHAR(36) NOT NULL",
+                "`name` VARCHAR(255) NOT NULL",
+                "`last_time` VARCHAR(40) NOT NULL",
+                "PRIMARY KEY (`server_id`, `residence_name`, `uuid`)"
         });
 
         private final String name;
@@ -54,6 +65,8 @@ public class MySQLStorage extends AbstractStorage {
     }
 
     private final EnumMap<DataTable, NamedSQLTable> tables = new EnumMap<>(DataTable.class);
+    /** Last successfully persisted visitor snapshots. Accessed only by the storage worker. */
+    private final Map<String, Map<UUID, ResidenceVisitor>> persistedVisitors = new HashMap<>();
     private SQLManager manager;
     private String serverId;
 
@@ -74,7 +87,7 @@ public class MySQLStorage extends AbstractStorage {
         if (!prefix.matches("[A-Za-z0-9_]*")) {
             throw new IllegalArgumentException("MySQL table prefix must contain only letters, digits and underscores");
         }
-        serverId = PluginConfig.STORAGE.MYSQL.SERVER_ID.get();
+        serverId = PluginConfig.SERVER_ID.get();
         if (serverId == null || serverId.isBlank()) {
             serverId = Integer.toString(plugin.getServer().getPort());
         }
@@ -118,7 +131,8 @@ public class MySQLStorage extends AbstractStorage {
 
     @Override
     protected Map<String, ResidenceSnapshot> readResidences() throws Exception {
-        return table(DataTable.RESIDENCES).createQuery()
+        Map<String, List<ResidenceVisitor>> visitors = readVisitors();
+        Map<String, ResidenceSnapshot> residences = table(DataTable.RESIDENCES).createQuery()
                 .addCondition("server_id", serverId)
                 .build().executeFunction(query -> {
                     Map<String, ResidenceSnapshot> result = new LinkedHashMap<>();
@@ -132,8 +146,30 @@ public class MySQLStorage extends AbstractStorage {
                                 rows.getInt("custom_model_data"),
                                 rows.getString("alias_name"),
                                 strings(rows.getString("description")),
-                                rates(rows.getString("rates"))
+                                rates(rows.getString("rates")),
+                                visitors.getOrDefault(name, List.of())
                         ));
+                    }
+                    return result;
+                }, Map.of());
+        persistedVisitors.clear();
+        visitors.forEach((name, list) -> persistedVisitors.put(name, indexVisitors(list)));
+        return residences;
+    }
+
+    private Map<String, List<ResidenceVisitor>> readVisitors() throws Exception {
+        return table(DataTable.VISITORS).createQuery()
+                .addCondition("server_id", serverId)
+                .build().executeFunction(query -> {
+                    Map<String, List<ResidenceVisitor>> result = new HashMap<>();
+                    ResultSet rows = query.getResultSet();
+                    while (rows.next()) {
+                        ResidenceVisitor visitor = new ResidenceVisitor(
+                                UUID.fromString(rows.getString("uuid")),
+                                rows.getString("name"),
+                                LocalDateTime.parse(rows.getString("last_time")));
+                        result.computeIfAbsent(rows.getString("residence_name"), ignored -> new ArrayList<>())
+                                .add(visitor);
                     }
                     return result;
                 }, Map.of());
@@ -167,6 +203,67 @@ public class MySQLStorage extends AbstractStorage {
         action.execute();
     }
 
+    private static Map<UUID, ResidenceVisitor> indexVisitors(List<ResidenceVisitor> visitors) {
+        Map<UUID, ResidenceVisitor> indexed = new LinkedHashMap<>();
+        visitors.forEach(visitor -> indexed.put(visitor.uuid(), visitor));
+        return indexed;
+    }
+
+    private void writeVisitors(String residenceName, List<ResidenceVisitor> visitors) throws SQLException {
+        Map<UUID, ResidenceVisitor> previous = persistedVisitors.getOrDefault(residenceName, Map.of());
+        Map<UUID, ResidenceVisitor> current = indexVisitors(visitors);
+        List<ResidenceVisitor> changed = current.values().stream()
+                .filter(visitor -> !visitor.equals(previous.get(visitor.uuid()))).toList();
+        List<UUID> removed = previous.keySet().stream()
+                .filter(uuid -> !current.containsKey(uuid)).toList();
+        if (changed.isEmpty() && removed.isEmpty()) return;
+
+        String tableName = "`" + table(DataTable.VISITORS).getTableName() + "`";
+        try (Connection connection = manager.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                if (!removed.isEmpty()) {
+                    String sql = "DELETE FROM " + tableName
+                            + " WHERE `server_id`=? AND `residence_name`=? AND `uuid`=?";
+                    try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                        for (UUID uuid : removed) {
+                            statement.setString(1, serverId);
+                            statement.setString(2, residenceName);
+                            statement.setString(3, uuid.toString());
+                            statement.addBatch();
+                        }
+                        statement.executeBatch();
+                    }
+                }
+                if (!changed.isEmpty()) {
+                    String sql = "REPLACE INTO " + tableName
+                            + " (`server_id`, `residence_name`, `uuid`, `name`, `last_time`)"
+                            + " VALUES (?, ?, ?, ?, ?)";
+                    try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                        for (ResidenceVisitor visitor : changed) {
+                            statement.setString(1, serverId);
+                            statement.setString(2, residenceName);
+                            statement.setString(3, visitor.uuid().toString());
+                            statement.setString(4, visitor.name());
+                            statement.setString(5, visitor.lastTime().toString());
+                            statement.addBatch();
+                        }
+                        statement.executeBatch();
+                    }
+                }
+                connection.commit();
+            } catch (SQLException | RuntimeException exception) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollback) {
+                    exception.addSuppressed(rollback);
+                }
+                throw exception;
+            }
+        }
+        persistedVisitors.put(residenceName, current);
+    }
+
     @Override
     protected void writeResidences(Map<String, ResidenceSnapshot> residences) throws Exception {
         if (residences.isEmpty()) return;
@@ -180,13 +277,20 @@ public class MySQLStorage extends AbstractStorage {
                     value.aliasName(), json(value.description()), jsonRates(value.rates()));
         }
         action.execute();
+        for (Map.Entry<String, ResidenceSnapshot> entry : residences.entrySet()) {
+            writeVisitors(entry.getKey(), entry.getValue().visitors());
+        }
     }
 
     @Override
     protected void deleteResidence(String name) throws Exception {
+        table(DataTable.VISITORS).createDelete()
+                .addCondition(new String[]{"server_id", "residence_name"}, new Object[]{serverId, name})
+                .build().execute();
         table(DataTable.RESIDENCES).createDelete()
                 .addCondition(new String[]{"server_id", "name"}, new Object[]{serverId, name})
                 .build().execute();
+        persistedVisitors.remove(name);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.artformgames.plugin.residencelist.storage.yaml;
 
 import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceVisitor;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
 import com.artformgames.plugin.residencelist.storage.data.ResidenceSnapshot;
 import com.artformgames.plugin.residencelist.storage.data.UserSnapshot;
@@ -57,6 +58,30 @@ public class YAMLStorageTest {
         assertNull(loaded.aliasName());
         assertTrue(loaded.rates().isEmpty());
         assertFalse(Files.readString(file).contains(author.toString()));
+    }
+
+    @Test
+    public void visitorsRoundTripAndOlderFileWithoutVisitorsLoads() throws Exception {
+        Path file = folder.newFile("visitors.yaml").toPath();
+        assertTrue(YAMLStorage.readResidence(file).visitors().isEmpty());
+
+        UUID uuid = UUID.randomUUID();
+        ResidenceVisitor visitor = new ResidenceVisitor(uuid, "Guest", LocalDateTime.of(2025, 2, 3, 4, 5, 6, 123456789));
+        YAMLStorage.writeResidenceFile(file, new ResidenceSnapshot(null, -1, null, List.of(), Map.of(), List.of(visitor)));
+        assertEquals(List.of(visitor), YAMLStorage.readResidence(file).visitors());
+
+        YAMLStorage.writeResidenceFile(file, ResidenceSnapshot.empty());
+        assertTrue(YAMLStorage.readResidence(file).visitors().isEmpty());
+        assertFalse(Files.readString(file).contains(uuid.toString()));
+    }
+
+    @Test
+    public void malformedVisitorsDoNotLoadAsEmpty() throws Exception {
+        Path file = folder.newFile("bad-visitors.yaml").toPath();
+        Files.writeString(file, "visitors:\n  - uuid: not-a-uuid\n    name: Guest\n    last-time: 2025-01-01T00:00:00\n");
+        assertThrows(Exception.class, () -> YAMLStorage.readResidence(file));
+        Files.writeString(file, "visitors: Guest\n");
+        assertThrows(Exception.class, () -> YAMLStorage.readResidence(file));
     }
 
     @Test

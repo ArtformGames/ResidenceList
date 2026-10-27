@@ -101,6 +101,7 @@ public class ResidenceListUI extends AutoPagedGUI {
             case NAME -> CONFIG.ITEMS.SORT_BY_NAME;
             case SIZE -> CONFIG.ITEMS.SORT_BY_SIZE;
             case RATINGS -> CONFIG.ITEMS.SORT_BY_RATINGS;
+            case VISITORS -> CONFIG.ITEMS.SORT_BY_VISITORS;
         };
 
         setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
@@ -157,7 +158,8 @@ public class ResidenceListUI extends AutoPagedGUI {
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 data.getDisplayName(), data.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
-                data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
+                data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend()),
+                data.getVisitorCount()
         );
         if (data.canTeleport(viewer)) {
             icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.TELEPORTABLE);
@@ -243,6 +245,7 @@ public class ResidenceListUI extends AutoPagedGUI {
                             "&7 &a➥ &e&lRATINGS",
                             "&7     &fNAME",
                             "&7     &fSIZE",
+                            "&7     &fVISITORS",
                             " ",
                             "&a ▶ LClick &8|&f Switch sort function",
                             "&a ▶ RClick &8|&f Toggle sort reverse"
@@ -258,6 +261,7 @@ public class ResidenceListUI extends AutoPagedGUI {
                             "&7     &fRATINGS",
                             "&7 &a➥ &2&lNAME",
                             "&7     &fSIZE",
+                            "&7     &fVISITORS",
                             " ",
                             "&a ▶ LClick &8|&f Switch sort function",
                             "&a ▶ RClick &8|&f Toggle sort reverse"
@@ -273,6 +277,23 @@ public class ResidenceListUI extends AutoPagedGUI {
                             "&7     &fRATINGS",
                             "&7     &fNAME",
                             "&7  &a➥ &d&lSIZE",
+                            "&7     &fVISITORS",
+                            " ",
+                            "&a ▶ LClick &8|&f Switch sort function",
+                            "&a ▶ RClick &8|&f Toggle sort reverse"
+                    ).params("order").build();
+
+            ConfiguredItem SORT_BY_VISITORS = ConfiguredItem.create()
+                    .defaultType(Material.LADDER)
+                    .defaultName("&fSort by &b&lVISITORS %(order)")
+                    .defaultLore(
+                            "&7",
+                            "&fSort order: %(order)",
+                            "&fSort functions:",
+                            "&7     &fRATINGS",
+                            "&7     &fNAME",
+                            "&7     &fSIZE",
+                            "&7 &a➥ &b&lVISITORS",
                             " ",
                             "&a ▶ LClick &8|&f Switch sort function",
                             "&a ▶ RClick &8|&f Toggle sort reverse"

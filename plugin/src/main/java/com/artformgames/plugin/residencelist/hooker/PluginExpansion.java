@@ -31,6 +31,13 @@ public class PluginExpansion extends EasyPlaceholder {
             return data.isPublicDisplayed();
         }, List.of("residence"));
 
+        handle("visitors", (player, args) -> {
+            if (args.length < 1) return "WRONG_ARGS";
+            ResidenceData data = ResidenceListAPI.getResidenceManager().getResidence(args[0]);
+            if (data == null) return "WRONG_NAME";
+            return data.getVisitorCount();
+        }, List.of("residence"));
+
     }
 
 }

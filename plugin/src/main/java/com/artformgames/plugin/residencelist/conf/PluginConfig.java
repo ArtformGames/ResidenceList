@@ -43,6 +43,12 @@ public interface PluginConfig extends Configuration {
     })
     ConfiguredValue<Boolean> CHECK_UPDATE = ConfiguredValue.of(Boolean.class, true);
 
+    @HeaderComments({
+            "Identifies this server. Use a different ID for each server sharing data.",
+            "If unset, empty or blank, the Minecraft server's listening port is used as the ID."
+    })
+    ConfiguredValue<String> SERVER_ID = ConfiguredValue.of(String.class, "");
+
     interface STORAGE extends Configuration {
 
         @HeaderComments("Storage backend: YAML or MYSQL.")
@@ -55,12 +61,7 @@ public interface PluginConfig extends Configuration {
             ConfiguredValue<String> DATABASE = ConfiguredValue.of(String.class, "residencelist");
             ConfiguredValue<String> USERNAME = ConfiguredValue.of(String.class, "root");
             ConfiguredValue<String> PASSWORD = ConfiguredValue.of(String.class, "");
-            @HeaderComments({
-                    "Identifies this server's residence rows in a shared MySQL database. Use a different ID for each server.",
-                    "If unset, empty or blank, the Minecraft server's listening port is used as the ID."
-            })
-            ConfiguredValue<String> SERVER_ID = ConfiguredValue.of(String.class, "");
-            @HeaderComments("Prefix for the users and residences tables. Only letters, digits and underscores are allowed.")
+            @HeaderComments("Prefix for the users, residences and visitors tables. Only letters, digits and underscores are allowed.")
             ConfiguredValue<String> TABLE_PREFIX = ConfiguredValue.of(String.class, "residencelist_");
 
         }
@@ -69,6 +70,13 @@ public interface PluginConfig extends Configuration {
 
 
     interface SETTINGS extends Configuration {
+
+        @HeaderComments({
+                "Seconds between asynchronous saves of changed residence data, including visitors (minimum 1).",
+                "Visits only update the cache; pending changes are also saved at shutdown.",
+                "Changes to this interval take effect after a restart."
+        })
+        ConfiguredValue<Integer> VISITOR_SAVE_INTERVAL_SECONDS = ConfiguredValue.of(Integer.class, 60);
 
         @HeaderComments({
                 "Remove info data when failed to load.",
@@ -104,9 +112,10 @@ public interface PluginConfig extends Configuration {
                         "&7Owner: &f%(owner)",
                         "&7Size: &f%(size) &7block(s)",
                         "&7Members: &f%(members)",
+                        "&7Visitors: &f%(visitors)",
                         "&7Rates: &a%(likes) &7likes, &c%(dislikes) &7dislikes.",
                         "#click-lore#{1,0}"
-                ).params("name", "owner", "members", "size", "likes", "dislikes")
+                ).params("name", "owner", "members", "size", "likes", "dislikes", "visitors")
                 .build();
 
         interface RATE extends Configuration {

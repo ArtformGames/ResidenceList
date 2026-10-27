@@ -26,6 +26,7 @@ List existing residence in server in a gui, and allow players to manage, telepor
 - Allow players to edit residence's nickname, description, icon and public status!
 - Allow players to pin their favourite residences!
 - Allow players to rate & comment residences!
+- Show each residence's unique visitor count and visit history, and sort residences by visitor count!
 - Admin can manage all residences in a GUI!
 
 ## Screenshots
@@ -87,6 +88,9 @@ You should install it before using placeholders in game.
 
 # %residencelist_name_<residence>%
 - Display the residence alias name or the residence name(if alias not set)
+
+# %residencelist_visitors_<residence>%
+- Display the number of unique visitors, excluding the owner
 ```
 
 ## Configurations
@@ -96,35 +100,6 @@ You can find configuration translations at [ResidenceList-Translations](https://
 ### Plugin Configuration (`config.yml`)
 
 Will be generated on the first boot up.
-
-The default storage is YAML. To use MySQL, create the database and configure:
-
-```yaml
-storage:
-  type: MYSQL
-  mysql:
-    host: localhost
-    port: 3306
-    database: residencelist
-    username: residencelist
-    password: 'your-password'
-    server-id: survival
-    table-prefix: 'residencelist_'
-```
-
-Restart after changing storage settings. Servers sharing a database and table prefix share
-player settings by UUID; give each server a different `server-id` to isolate its residence
-metadata. If `server-id` is unset, empty or blank, the Minecraft server's listening port is used.
-User settings are loaded on login and saved on logout or shutdown; concurrent
-sessions use the last saved snapshot. Existing YAML files are preserved when switching
-backends, but are not automatically imported into MySQL.
-
-Both backends use cached metadata during gameplay and an ordered background IO worker for
-loads and saves. Initialization completes before commands and GUIs become available.
-Shutdown queues final snapshots and closes the database after pending writes finish.
-Integrations can use `DataStorage.flush()` to await persistence asynchronously; never join
-its future on the server thread. Configuration reload runs asynchronously through the plugin
-scheduler; result messages are sent on the server thread.
 
 ### Messages Configuration (`messages.yml`)
 

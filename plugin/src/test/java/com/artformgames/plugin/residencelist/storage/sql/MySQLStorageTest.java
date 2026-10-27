@@ -4,6 +4,7 @@ import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easysql.EasySQL;
 import cc.carm.lib.easysql.api.SQLManager;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceVisitor;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
 import com.artformgames.plugin.residencelist.storage.data.ResidenceSnapshot;
 import com.artformgames.plugin.residencelist.storage.data.UserSnapshot;
@@ -80,6 +81,49 @@ public class MySQLStorageTest {
             first.deleteResidence("home");
             assertTrue(first.readResidences().isEmpty());
             assertEquals("B", second.readResidences().get("home").aliasName());
+        } finally {
+            EasySQL.shutdownManager(manager);
+        }
+    }
+
+    @Test
+    public void visitorsUseSeparateScopedTableAndFollowRenameAndDelete() throws Exception {
+        SQLManager manager = EasySQL.createManager("org.h2.Driver",
+                "jdbc:h2:mem:residencelist_visitor_test;MODE=MySQL;DB_CLOSE_DELAY=-1", "sa", "");
+        try {
+            EasyPlugin plugin = mock(EasyPlugin.class);
+            MySQLStorage first = new MySQLStorage(plugin, manager, "first", "rl_visit_");
+            MySQLStorage second = new MySQLStorage(plugin, manager, "second", "rl_visit_");
+            UUID uuid = UUID.randomUUID();
+            ResidenceVisitor old = new ResidenceVisitor(uuid, "Guest", LocalDateTime.of(2025, 1, 1, 12, 0));
+            ResidenceVisitor latest = new ResidenceVisitor(uuid, "RenamedGuest", LocalDateTime.of(2025, 2, 1, 12, 0));
+            ResidenceSnapshot firstSnapshot = new ResidenceSnapshot(null, -1, null, List.of(), Map.of(), List.of(old));
+            ResidenceSnapshot latestSnapshot = new ResidenceSnapshot(null, -1, null, List.of(), Map.of(), List.of(latest));
+            first.writeResidences(Map.of("home", firstSnapshot));
+            second.writeResidences(Map.of("home", firstSnapshot));
+            assertEquals(List.of(old), first.readResidences().get("home").visitors());
+
+            first.writeResidences(Map.of("home", latestSnapshot));
+            assertEquals(List.of(latest), first.readResidences().get("home").visitors());
+            assertEquals(List.of(old), second.readResidences().get("home").visitors());
+            first.writeResidences(Map.of("new-home", latestSnapshot));
+            first.deleteResidence("home");
+            assertEquals(List.of(latest), first.readResidences().get("new-home").visitors());
+            assertFalse(first.readResidences().containsKey("home"));
+            assertEquals(List.of(old), second.readResidences().get("home").visitors());
+
+            first.writeResidences(Map.of("new-home", ResidenceSnapshot.empty()));
+            assertTrue(first.readResidences().get("new-home").visitors().isEmpty());
+            first.deleteResidence("new-home");
+            try (Connection connection = manager.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(
+                         "SELECT COUNT(*) FROM rl_visit_visitors WHERE server_id = ?")) {
+                statement.setString(1, "first");
+                try (var rows = statement.executeQuery()) {
+                    assertTrue(rows.next());
+                    assertEquals(0, rows.getInt(1));
+                }
+            }
         } finally {
             EasySQL.shutdownManager(manager);
         }

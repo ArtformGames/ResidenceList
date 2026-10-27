@@ -99,6 +99,7 @@ public class ResidenceAdminUI extends AutoPagedGUI {
             case NAME -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_NAME;
             case SIZE -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_SIZE;
             case RATINGS -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_RATINGS;
+            case VISITORS -> ResidenceListUI.CONFIG.ITEMS.SORT_BY_VISITORS;
         };
 
         setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
@@ -136,7 +137,8 @@ public class ResidenceAdminUI extends AutoPagedGUI {
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 data.getDisplayName(), data.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
-                data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend())
+                data.countRate(ResidenceRate::recommend), data.countRate(r -> !r.recommend()),
+                data.getVisitorCount()
         );
         if (data.canTeleport(viewer)) {
             icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.TELEPORTABLE);

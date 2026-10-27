@@ -2,6 +2,7 @@ package com.artformgames.plugin.residencelist.storage;
 
 import cc.carm.lib.easyplugin.EasyPlugin;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceVisitor;
 import com.artformgames.plugin.residencelist.storage.data.CachedResidenceData;
 import com.artformgames.plugin.residencelist.storage.data.CachedUserData;
 import com.artformgames.plugin.residencelist.storage.data.ResidenceSnapshot;
@@ -12,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +90,8 @@ public class AbstractStorageTest {
 
     @Test
     public void failedRenameKeepsOldCopyUntilNewCopyPersists() throws Exception {
-        ResidenceSnapshot original = new ResidenceSnapshot(null, -1, "Original", List.of(), Map.of());
+        ResidenceSnapshot original = new ResidenceSnapshot(null, -1, "Original", List.of(), Map.of(),
+                List.of(new ResidenceVisitor(UUID.randomUUID(), "Visitor", LocalDateTime.now())));
         storage.diskResidences.put("home", original);
         storage.claim("home");
         await(storage.initializeAsync());
@@ -186,6 +189,82 @@ public class AbstractStorageTest {
         assertEquals(newer, storage.diskUsers.get(key));
     }
 
+    @Test
+    public void visitsAreBufferedAndCoalescedUntilShutdown() throws Exception {
+        storage.claim("home");
+        await(storage.initializeAsync());
+        CachedResidenceData data = storage.getResidence("home");
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime start = LocalDateTime.of(2026, 10, 27, 12, 0);
+        for (int i = 0; i < 1000; i++) data.recordVisit(uuid, "Visitor", start.plusSeconds(i));
+        // A worker barrier proves recording visits has not queued any writes.
+        await(storage.load(UUID.randomUUID(), true));
+        assertTrue(storage.residenceWrites.isEmpty());
+        assertEquals(1, data.getVisitorCount());
+
+        storage.shutdown();
+        await(storage.flush());
+        assertEquals(1, storage.residenceWrites.size());
+        assertEquals(List.of(new ResidenceVisitor(uuid, "Visitor", start.plusSeconds(999))),
+                storage.diskResidences.get("home").visitors());
+    }
+
+    @Test
+    public void periodicSavePersistsVisitsWithoutExplicitSave() throws Exception {
+        storage.saveIntervalSeconds = 1;
+        storage.claim("home");
+        await(storage.initializeAsync());
+        CachedResidenceData data = storage.getResidence("home");
+        data.recordVisit(UUID.randomUUID(), "Visitor", LocalDateTime.now());
+        assertTrue("timer should persist buffered visits", storage.residenceWriteCompleted.await(5, TimeUnit.SECONDS));
+        assertEquals(data.getVisitors(), storage.diskResidences.get("home").visitors());
+        assertNotSame(Thread.currentThread(), storage.ioThreads.get(storage.ioThreads.size() - 1));
+    }
+
+    @Test
+    public void visitDuringQueuedWriteRemainsDirtyAndIsSavedAtShutdown() throws Exception {
+        storage.claim("home");
+        await(storage.initializeAsync());
+        CachedResidenceData data = storage.getResidence("home");
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime time = LocalDateTime.now();
+        data.recordVisit(uuid, "FirstName", time);
+        storage.blockNextResidenceWrite.set(true);
+        storage.saveAllResidences();
+        assertTrue(storage.residenceWriteStarted.await(5, TimeUnit.SECONDS));
+        data.recordVisit(uuid, "NewName", time.plusMinutes(1));
+        storage.residenceWriteRelease.countDown();
+        await(storage.load(UUID.randomUUID(), true));
+        assertEquals("FirstName", storage.diskResidences.get("home").visitors().get(0).name());
+        assertTrue(data.isDirty());
+
+        storage.shutdown();
+        await(storage.flush());
+        assertEquals(data.getVisitors(), storage.diskResidences.get("home").visitors());
+    }
+
+    @Test
+    public void failedVisitWriteRetriesBeforeNewerSnapshotAndDeletion() throws Exception {
+        storage.claim("home");
+        await(storage.initializeAsync());
+        CachedResidenceData data = storage.getResidence("home");
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime time = LocalDateTime.now();
+        data.recordVisit(uuid, "FirstName", time);
+        storage.failNextResidenceWrite.set(true);
+        storage.saveAllResidences();
+        assertTrue(storage.failedResidenceWrite.await(5, TimeUnit.SECONDS));
+        data.recordVisit(uuid, "NewName", time.plusMinutes(1));
+        await(storage.flush());
+        assertEquals(data.getVisitors(), storage.diskResidences.get("home").visitors());
+        assertFalse(data.isDirty());
+        storage.removeResidence("home");
+        data.recordVisit(uuid, "Detached", time.plusMinutes(2));
+        storage.shutdown();
+        await(storage.flush());
+        assertFalse(storage.diskResidences.containsKey("home"));
+    }
+
     private static <T> T await(CompletableFuture<T> future) throws Exception {
         return future.get(5, TimeUnit.SECONDS);
     }
@@ -197,15 +276,21 @@ public class AbstractStorageTest {
         final List<String> events = java.util.Collections.synchronizedList(new ArrayList<>());
         final List<Thread> ioThreads = java.util.Collections.synchronizedList(new ArrayList<>());
         final List<UserSnapshot> userWrites = java.util.Collections.synchronizedList(new ArrayList<>());
+        final List<Map<String, ResidenceSnapshot>> residenceWrites = java.util.Collections.synchronizedList(new ArrayList<>());
+        long saveIntervalSeconds = 60;
         final AtomicBoolean failNextResidenceWrite = new AtomicBoolean();
         final AtomicBoolean failNextUserRead = new AtomicBoolean();
         final AtomicBoolean blockNextUserWrite = new AtomicBoolean();
         final AtomicBoolean blockNextUserRead = new AtomicBoolean();
+        final AtomicBoolean blockNextResidenceWrite = new AtomicBoolean();
         final CountDownLatch failedResidenceWrite = new CountDownLatch(1);
         final CountDownLatch userWriteStarted = new CountDownLatch(1);
         final CountDownLatch userWriteRelease = new CountDownLatch(1);
         final CountDownLatch userReadStarted = new CountDownLatch(1);
         final CountDownLatch userReadRelease = new CountDownLatch(1);
+        final CountDownLatch residenceWriteStarted = new CountDownLatch(1);
+        final CountDownLatch residenceWriteRelease = new CountDownLatch(1);
+        final CountDownLatch residenceWriteCompleted = new CountDownLatch(1);
 
         TestStorage(EasyPlugin plugin) { super(plugin); }
 
@@ -227,10 +312,15 @@ public class AbstractStorageTest {
 
         void pauseFirstUserWrite() { blockNextUserWrite.set(true); }
         void pauseNextUserRead() { blockNextUserRead.set(true); }
-        void releaseAll() { userWriteRelease.countDown(); userReadRelease.countDown(); }
+        void releaseAll() {
+            userWriteRelease.countDown();
+            userReadRelease.countDown();
+            residenceWriteRelease.countDown();
+        }
         private void io(String event) { ioThreads.add(Thread.currentThread()); events.add(event); }
 
         @Override protected void runOnServerThread(Runnable action) { action.run(); }
+        @Override protected long residenceSaveIntervalSeconds() { return saveIntervalSeconds; }
         @Override protected ClaimedResidence resolveResidence(String name) { return claims.get(name); }
         @Override protected void openStorage() { io("open"); }
         @Override protected Map<String, ResidenceSnapshot> readResidences() { io("read-residences"); return Map.copyOf(diskResidences); }
@@ -256,13 +346,19 @@ public class AbstractStorageTest {
                 else diskUsers.put(snapshot.key(), snapshot);
             }
         }
-        @Override protected void writeResidences(Map<String, ResidenceSnapshot> snapshots) {
+        @Override protected void writeResidences(Map<String, ResidenceSnapshot> snapshots) throws Exception {
             io("write-residences");
+            if (blockNextResidenceWrite.getAndSet(false)) {
+                residenceWriteStarted.countDown();
+                if (!residenceWriteRelease.await(5, TimeUnit.SECONDS)) throw new AssertionError("Timed out writing residence");
+            }
             if (failNextResidenceWrite.getAndSet(false)) {
                 failedResidenceWrite.countDown();
                 throw new IllegalStateException("write failed");
             }
             diskResidences.putAll(snapshots);
+            residenceWrites.add(snapshots);
+            residenceWriteCompleted.countDown();
         }
         @Override protected void deleteResidence(String name) { io("delete-residence"); diskResidences.remove(name); }
         @Override protected void closeStorage() { io("close"); }

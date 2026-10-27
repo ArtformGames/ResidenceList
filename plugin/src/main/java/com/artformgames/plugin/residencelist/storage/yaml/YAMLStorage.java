@@ -3,6 +3,7 @@ package com.artformgames.plugin.residencelist.storage.yaml;
 import cc.carm.lib.easyplugin.EasyPlugin;
 import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceVisitor;
 import com.artformgames.plugin.residencelist.api.sort.SortFunctions;
 import com.artformgames.plugin.residencelist.storage.AbstractStorage;
 import com.artformgames.plugin.residencelist.storage.data.CachedUserData;
@@ -114,6 +115,15 @@ public class YAMLStorage extends AbstractStorage {
         conf.set("description", data.description());
         conf.set("rates", null);
         data.rates().forEach((key, rate) -> conf.set("rates." + key, serializeRate(rate)));
+        List<Map<String, Object>> visitors = new ArrayList<>();
+        for (ResidenceVisitor visitor : data.visitors()) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("uuid", visitor.uuid().toString());
+            entry.put("name", visitor.name());
+            entry.put("last-time", visitor.lastTime().toString());
+            visitors.add(entry);
+        }
+        conf.set("visitors", visitors);
         writeYaml(file, conf);
     }
 
@@ -145,6 +155,7 @@ public class YAMLStorage extends AbstractStorage {
         requireType(conf, "nickname", conf.isString("nickname"), file);
         requireStringList(conf, "description", file);
         requireType(conf, "rates", conf.isConfigurationSection("rates"), file);
+        requireType(conf, "visitors", conf.isList("visitors"), file);
         Material icon = null;
         int customModelData = -1;
         String iconText = conf.getString("icon");
@@ -155,7 +166,31 @@ public class YAMLStorage extends AbstractStorage {
             if (parts.length > 1) customModelData = Integer.parseInt(parts[1]);
         }
         return new ResidenceSnapshot(icon, customModelData, conf.getString("nickname"),
-                new ArrayList<>(conf.getStringList("description")), readRates(conf.getConfigurationSection("rates"), file));
+                new ArrayList<>(conf.getStringList("description")), readRates(conf.getConfigurationSection("rates"), file),
+                readVisitors(conf.getList("visitors"), file));
+    }
+
+    private static List<ResidenceVisitor> readVisitors(@Nullable List<?> entries, Path file) throws IOException {
+        if (entries == null) return List.of();
+        Map<UUID, ResidenceVisitor> visitors = new LinkedHashMap<>();
+        for (Object entry : entries) {
+            if (!(entry instanceof Map<?, ?> fields)
+                    || !(fields.get("uuid") instanceof String uuidText)
+                    || !(fields.get("name") instanceof String name)
+                    || !(fields.get("last-time") instanceof String timeText)) {
+                throw new IOException("Invalid residence visitor in " + file);
+            }
+            try {
+                UUID uuid = UUID.fromString(uuidText);
+                ResidenceVisitor visitor = new ResidenceVisitor(uuid, name, LocalDateTime.parse(timeText));
+                if (visitors.putIfAbsent(uuid, visitor) != null) {
+                    throw new IOException("Duplicate residence visitor " + uuid + " in " + file);
+                }
+            } catch (IllegalArgumentException exception) {
+                throw new IOException("Invalid residence visitor in " + file, exception);
+            }
+        }
+        return List.copyOf(visitors.values());
     }
 
     private static Map<UUID, ResidenceRate> readRates(@Nullable ConfigurationSection root, Path file) throws IOException {

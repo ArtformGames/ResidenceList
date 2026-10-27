@@ -161,6 +161,15 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 }
             }
         });
+
+        setItem(16, new GUIItem(ResidenceInfoUI.CONFIG.ITEMS.VISITORS
+                .prepare(getResidenceData().getVisitorCount()).get(viewer)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                ResidenceInfoUI.openVisitors(clicker, residenceData, ResidenceManageUI.this);
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+            }
+        });
     }
 
     public void loadStatus() {
@@ -232,7 +241,8 @@ public class ResidenceManageUI extends AutoPagedGUI {
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 this.residenceData.getDisplayName(), this.residenceData.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
-                this.residenceData.countRate(ResidenceRate::recommend), this.residenceData.countRate(r -> !r.recommend())
+                this.residenceData.countRate(ResidenceRate::recommend), this.residenceData.countRate(r -> !r.recommend()),
+                this.residenceData.getVisitorCount()
         );
         icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
         if (!getResidenceData().getDescription().isEmpty())

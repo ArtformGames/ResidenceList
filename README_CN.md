@@ -28,6 +28,7 @@ README LANGUAGES [ [English](README.md) | [**中文**](README_CN.md)  ]
 - 允许玩家编辑领地的昵称、描述、图标和公开状态 !
 - 允许玩家置顶他们喜欢的领地 !
 - 允许玩家对其他领地作出 评分 & 评论 !
+- 显示领地的历史访客及独立访客数，并支持按访客数排序 !
 - 管理员可以在一个图形化界面中管理所有领地 !
 
 ## 游戏内截图
@@ -89,6 +90,9 @@ README LANGUAGES [ [English](README.md) | [**中文**](README_CN.md)  ]
 
 # %residencelist_name_<residence>%
 - 显示领地昵称或领地名称 (如果未设置昵称)
+
+# %residencelist_visitors_<residence>%
+- 显示领地独立访客数（不包含领地主）
 ```
 
 ## 配置文件
@@ -111,34 +115,6 @@ README LANGUAGES [ [English](README.md) | [**中文**](README_CN.md)  ]
 ## 统计信息
 
 [![bStats](https://bstats.org/signatures/bukkit/ResidenceList.svg)](https://bstats.org/plugin/bukkit/ResidenceList/19709)
-
-## MySQL 存储
-
-默认使用 YAML。在 MySQL 中创建数据库后，修改 `config.yml` 并重启服务器：
-
-```yaml
-storage:
-  type: MYSQL
-  mysql:
-    host: localhost
-    port: 3306
-    database: residencelist
-    username: residencelist
-    password: 'your-password'
-    server-id: survival
-    table-prefix: 'residencelist_'
-```
-
-共用数据库及表前缀的服务器会按 UUID 共享玩家设置；每台服务器应设置不同的
-`server-id`，以隔离领地信息。`server-id` 未填写、为空或仅含空白时，会使用 Minecraft
-服务器的监听端口作为 ID。玩家设置在登录时加载、退出或关闭时保存；同一玩家
-多服同时在线时，以最后保存的快照为准。切换后端会保留原 YAML 文件，但不会自动迁移数据。
-存储配置变更需要重启，普通配置仍可使用 reload 命令重新加载。
-
-YAML 和 MySQL 的游戏内操作均使用内存缓存，读写由有序后台队列执行。预加载完成后
-才开放命令和 GUI；关闭时先排队保存最终快照，再关闭连接池。API 使用者可通过
-`DataStorage.flush()` 异步等待保存完成，请勿在主线程调用 `join()`。
-配置重载通过插件调度器异步执行，结果消息在主线程发送。
 
 ## 开源协议
 

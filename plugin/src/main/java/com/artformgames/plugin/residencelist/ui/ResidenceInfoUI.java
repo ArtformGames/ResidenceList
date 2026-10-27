@@ -12,6 +12,7 @@ import com.artformgames.plugin.residencelist.Main;
 import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceVisitor;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
@@ -28,17 +29,29 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.Optional;
 
 public class ResidenceInfoUI extends AutoPagedGUI {
 
     public static void open(@NotNull Player player, @NotNull ResidenceData data, @Nullable GUI previousGUI) {
+        open(player, data, previousGUI, false);
+    }
+
+    public static void openVisitors(@NotNull Player player, @NotNull ResidenceData data, @Nullable GUI previousGUI) {
+        open(player, data, previousGUI, true);
+    }
+
+    private static void open(@NotNull Player player, @NotNull ResidenceData data,
+                             @Nullable GUI previousGUI, boolean visitors) {
         UserListData user = ResidenceListAPI.getUserManager().getNullable(player.getUniqueId());
         if (user == null) {
             PluginMessages.LOAD_FAILED.sendTo(player);
             return;
         }
-        new ResidenceInfoUI(player, user, data, previousGUI).openGUI(player);
+        ResidenceInfoUI gui = new ResidenceInfoUI(player, user, data, previousGUI);
+        if (visitors) gui.displayVisitors();
+        gui.openGUI(player);
     }
 
     protected final @NotNull Player viewer;
@@ -180,10 +193,11 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
             }
         });
+        setVisitorsButton();
 
         if (getResidenceData().getRates().isEmpty()) {
+            addItem(new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
             goFirstPage();
-            setItem(40, new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
             return;
         }
 
@@ -204,6 +218,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
 
     public void displayMembers() {
         this.container.clear();
+        this.page = 1;
 
         setItem(16, new GUIItem(CONFIG.ITEMS.RATES
                 .prepare(getResidenceData().getRates().size())
@@ -215,6 +230,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
             }
         });
+        setVisitorsButton();
 
         ClaimedResidence residence = getResidenceData().getResidence();
         if (!ResidenceUtils.isServerLand(getResidenceData().getResidence())) {
@@ -238,6 +254,44 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         goFirstPage();
     }
 
+    private void setVisitorsButton() {
+        setItem(17, new GUIItem(CONFIG.ITEMS.VISITORS.prepare(getResidenceData().getVisitorCount()).get(viewer)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                displayVisitors();
+                openGUI(viewer);
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+            }
+        });
+    }
+
+    public void displayVisitors() {
+        this.container.clear();
+        this.page = 1;
+
+        setItem(16, new GUIItem(CONFIG.ITEMS.RATES.prepare(getResidenceData().getRates().size()).get(viewer)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                displayRates();
+                openGUI(viewer);
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+            }
+        });
+        setItem(17, new GUIItem(CONFIG.ITEMS.VISITORS.prepare(getResidenceData().getVisitorCount()).get(viewer)));
+
+        if (getResidenceData().getVisitors().isEmpty()) {
+            addItem(new GUIItem(CONFIG.ITEMS.NO_VISITORS.get(viewer)));
+        } else {
+            getResidenceData().getVisitors().stream()
+                    .sorted(Comparator.comparing(ResidenceVisitor::lastTime).reversed())
+                    .forEach(visitor -> addItem(new GUIItem(CONFIG.ITEMS.VISITOR
+                            .prepare(visitor.name(), PluginConfig.DATETIME_FORMATTER.format(visitor.lastTime()))
+                            .setSkullOwner(visitor.uuid())
+                            .get(viewer))));
+        }
+        goFirstPage();
+    }
+
     public void loadIcon() {
         setItem(11, generateIcon(getPlayerData(), getResidenceData().getResidence()));
     }
@@ -247,7 +301,8 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         PreparedItem icon = PluginConfig.ICON.INFO.prepare(
                 this.residenceData.getDisplayName(), this.residenceData.getOwner(),
                 residence.getTrustedPlayers().size() + 1, residence.getMainArea().getSize(),
-                this.residenceData.countRate(ResidenceRate::recommend), this.residenceData.countRate(r -> !r.recommend())
+                this.residenceData.countRate(ResidenceRate::recommend), this.residenceData.countRate(r -> !r.recommend()),
+                this.residenceData.getVisitorCount()
         );
         icon.insert("click-lore", CONFIG.ADDITIONAL_LORE.CLICK);
         if (!getResidenceData().getDescription().isEmpty())
@@ -353,6 +408,27 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                             "&7",
                             "&a ▶ Click &8|&f See all rates."
                     ).params("size").build();
+
+            ConfiguredItem VISITORS = ConfiguredItem.create()
+                    .defaultType(Material.PLAYER_HEAD)
+                    .defaultName("&bVisitors")
+                    .defaultLore(
+                            "&7",
+                            "&7This residence has &f%(visitors) &7unique visitors.",
+                            "&7",
+                            "&a ▶ Click &8|&f See past visitors."
+                    ).params("visitors").build();
+
+            ConfiguredItem VISITOR = ConfiguredItem.create()
+                    .defaultType(Material.PLAYER_HEAD)
+                    .defaultName("&a%(name)")
+                    .defaultLore("&7Last visited: &f%(last_time)")
+                    .params("name", "last_time").build();
+
+            ConfiguredItem NO_VISITORS = ConfiguredItem.create()
+                    .defaultType(Material.BARRIER)
+                    .defaultName("&7No visitors yet")
+                    .build();
 
             ConfiguredItem RATE = ConfiguredItem.create()
                     .defaultType(Material.WRITABLE_BOOK)

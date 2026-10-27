@@ -2,6 +2,7 @@ package com.artformgames.plugin.residencelist.storage.data;
 
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
+import com.artformgames.plugin.residencelist.api.residence.ResidenceVisitor;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
@@ -10,6 +11,8 @@ import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,7 @@ public class CachedResidenceData implements ResidenceData {
     private String aliasName;
     private List<String> description;
     private final Map<UUID, ResidenceRate> rates = new LinkedHashMap<>();
+    private final Map<UUID, ResidenceVisitor> visitors = new LinkedHashMap<>();
     private ResidenceSnapshot saved;
     private Runnable saveAction;
 
@@ -33,6 +37,8 @@ public class CachedResidenceData implements ResidenceData {
         this.aliasName = snapshot.aliasName();
         this.description = snapshot.description();
         this.rates.putAll(snapshot.rates());
+        snapshot.visitors().forEach(visitor -> visitors.merge(visitor.uuid(), visitor,
+                (old, latest) -> old.lastTime().isAfter(latest.lastTime()) ? old : latest));
         this.saved = snapshot;
     }
 
@@ -41,7 +47,7 @@ public class CachedResidenceData implements ResidenceData {
     }
 
     public synchronized ResidenceSnapshot snapshot() {
-        return new ResidenceSnapshot(icon, customModelData, aliasName, description, rates);
+        return new ResidenceSnapshot(icon, customModelData, aliasName, description, rates, List.copyOf(visitors.values()));
     }
 
     public synchronized boolean isDirty() {
@@ -111,7 +117,7 @@ public class CachedResidenceData implements ResidenceData {
 
     @Override
     public synchronized Map<UUID, ResidenceRate> getRates() {
-        return snapshot().rates();
+        return Collections.unmodifiableMap(new LinkedHashMap<>(rates));
     }
 
     @Override
@@ -129,6 +135,22 @@ public class CachedResidenceData implements ResidenceData {
     @Override
     public synchronized void removeRate(UUID author) {
         rates.remove(author);
+    }
+
+    @Override
+    public synchronized @NotNull List<ResidenceVisitor> getVisitors() {
+        return List.copyOf(visitors.values());
+    }
+
+    @Override
+    public synchronized int getVisitorCount() {
+        return visitors.size();
+    }
+
+    @Override
+    public synchronized void recordVisit(@NotNull UUID uuid, @NotNull String name, @NotNull LocalDateTime time) {
+        ResidenceVisitor visitor = new ResidenceVisitor(uuid, name, time);
+        visitors.merge(uuid, visitor, (old, latest) -> old.lastTime().isAfter(latest.lastTime()) ? old : latest);
     }
 
     @Override

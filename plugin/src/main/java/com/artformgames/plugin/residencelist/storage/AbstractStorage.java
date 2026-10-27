@@ -25,6 +25,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -48,10 +50,11 @@ public abstract class AbstractStorage extends UserDataManager<UUID, CachedUserDa
     private CompletableFuture<Void> termination = CompletableFuture.completedFuture(null);
     private boolean ready;
     private boolean closing;
+    private ScheduledFuture<?> residenceSaveTask;
     private final Thread shutdownHook;
 
     protected AbstractStorage(@NotNull EasyPlugin plugin) {
-        super(plugin, Executors.newSingleThreadExecutor(task -> {
+        super(plugin, Executors.newSingleThreadScheduledExecutor(task -> {
             Thread worker = new Thread(task, plugin.getName() + "-Storage");
             // Let queued final writes finish during an orderly JVM shutdown.
             worker.setDaemon(false);
@@ -122,6 +125,9 @@ public abstract class AbstractStorage extends UserDataManager<UUID, CachedUserDa
                                     }
                                 }
                                 ready = true;
+                                long interval = residenceSaveIntervalSeconds();
+                                residenceSaveTask = ((ScheduledExecutorService) executor).scheduleWithFixedDelay(
+                                        this::saveResidencesPeriodically, interval, interval, TimeUnit.SECONDS);
                             }
                             initialization.complete(null);
                         } catch (Exception ex) {
@@ -363,6 +369,25 @@ public abstract class AbstractStorage extends UserDataManager<UUID, CachedUserDa
         return dirty;
     }
 
+    protected long residenceSaveIntervalSeconds() {
+        return Math.max(1, PluginConfig.SETTINGS.VISITOR_SAVE_INTERVAL_SECONDS.getNotNull());
+    }
+
+    /** Runs on the same worker as all IO, so slow writes cannot accumulate timer tasks. */
+    private void saveResidencesPeriodically() {
+        try {
+            // Retry an older failed write before taking another snapshot of the same data.
+            drainWrites();
+            synchronized (stateLock) {
+                if (!ready || closing) return;
+                Map<String, CachedResidenceData> dirty = dirtyResidences();
+                if (!dirty.isEmpty()) report(saveResidences(dirty));
+            }
+        } catch (Exception exception) {
+            getLogger().log(Level.SEVERE, "Periodic residence save failed; pending data will be retried.", exception);
+        }
+    }
+
     private CompletableFuture<Void> saveResidences(Map<String, CachedResidenceData> data) {
         Map<String, ResidenceSnapshot> snapshots = new LinkedHashMap<>();
         data.forEach((name, value) -> {
@@ -410,6 +435,7 @@ public abstract class AbstractStorage extends UserDataManager<UUID, CachedUserDa
         synchronized (stateLock) {
             if (closing) return;
             closing = true;
+            if (residenceSaveTask != null) residenceSaveTask.cancel(false);
             CompletableFuture<Void> writes = ready ? flushQueued() : CompletableFuture.completedFuture(null);
             CompletableFuture<Void> close = submit(() -> {
                 try {
