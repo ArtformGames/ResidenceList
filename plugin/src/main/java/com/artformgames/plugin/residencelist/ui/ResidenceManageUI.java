@@ -162,7 +162,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(16, new GUIItem(ResidenceInfoUI.CONFIG.ITEMS.VISITORS
+        setItem(16, new GUIItem(CONFIG.ITEMS.VISITORS
                 .prepare(getResidenceData().getVisitorCount()).get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
@@ -329,6 +329,16 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             "&a ▶ Click &8|&f Change to &a&lPublic"
                     ).build();
 
+
+            ConfiguredItem VISITORS = ConfiguredItem.create()
+                    .defaultType(Material.PLAYER_HEAD)
+                    .defaultName("&bVisitors")
+                    .defaultLore(
+                            "&7",
+                            "&7This residence has &f%(visitors) &7unique visitors.",
+                            "&7",
+                            "&a ▶ Click &8|&f See past visitors."
+                    ).params("visitors").build();
 
             ConfiguredItem EMPTY = ConfiguredItem.create()
                     .defaultType(Material.BARRIER)
