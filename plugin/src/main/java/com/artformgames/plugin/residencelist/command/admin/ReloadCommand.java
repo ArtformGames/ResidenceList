@@ -5,6 +5,7 @@ import com.artformgames.plugin.residencelist.Main;
 import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,14 +21,14 @@ public class ReloadCommand extends SubCommand<AdminCommands> {
         try {
             PluginMessages.RELOAD.START.sendTo(sender);
             long s1 = System.currentTimeMillis();
-            Main.getInstance().getScheduler().runAsync(() -> {
+            Main.getInstance().getTaskScheduler().runAsync(() -> {
                 try {
                     Main.getInstance().getConfiguration().reload();
                     long elapsed = System.currentTimeMillis() - s1;
-                    PluginMessages.RELOAD.SUCCESS.sendTo(sender, elapsed);
+                    reply(sender, () -> PluginMessages.RELOAD.SUCCESS.sendTo(sender, elapsed));
                 } catch (Exception e) {
                     e.printStackTrace();
-                    PluginMessages.RELOAD.FAILED.sendTo(sender);
+                    reply(sender, () -> PluginMessages.RELOAD.FAILED.sendTo(sender));
                 }
             });
         } catch (Exception e) {
@@ -36,6 +37,14 @@ public class ReloadCommand extends SubCommand<AdminCommands> {
         }
 
         return null;
+    }
+
+    private void reply(CommandSender sender, Runnable action) {
+        if (sender instanceof Player player) {
+            Main.getInstance().getTaskScheduler().runForPlayer(player, action);
+        } else {
+            Main.getInstance().getTaskScheduler().runGlobal(action);
+        }
     }
 
 }

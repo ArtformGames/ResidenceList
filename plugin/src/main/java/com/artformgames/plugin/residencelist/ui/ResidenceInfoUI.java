@@ -21,7 +21,6 @@ import com.artformgames.plugin.residencelist.utils.GUIUtils;
 import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -105,14 +104,9 @@ public class ResidenceInfoUI extends AutoPagedGUI {
             });
         }
 
-        Location teleportLocation = getResidenceData().getTeleportLocation(getViewer());
-        if (teleportLocation != null && getResidenceData().canTeleport(getViewer())) {
-            setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT_TO.prepare(
-                    getResidenceData().getResidence().getMainArea().getWorldName(),
-                    teleportLocation.getBlockX(),
-                    teleportLocation.getBlockY(),
-                    teleportLocation.getBlockZ()
-            ).get(getViewer())) {
+        ResidenceUtils.TeleportPreview preview = ResidenceUtils.teleportPreview(getResidenceData(), getViewer(), null);
+        if (preview != null && getResidenceData().canTeleport(getViewer())) {
+            setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT_TO.prepare(preview.parameters()).get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     residenceData.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));

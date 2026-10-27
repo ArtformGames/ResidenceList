@@ -4,13 +4,13 @@ import cc.carm.lib.easyplugin.EasyPlugin;
 import cc.carm.lib.easyplugin.user.UserDataManager;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
+import com.artformgames.plugin.residencelist.scheduler.TaskScheduler;
 import com.artformgames.plugin.residencelist.storage.data.CachedResidenceData;
 import com.artformgames.plugin.residencelist.storage.data.CachedUserData;
 import com.artformgames.plugin.residencelist.storage.data.ResidenceSnapshot;
 import com.artformgames.plugin.residencelist.storage.data.UserSnapshot;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,9 +80,9 @@ public abstract class AbstractStorage extends UserDataManager<UUID, CachedUserDa
     protected abstract void deleteResidence(String name) throws Exception;
     protected void closeStorage() throws Exception { }
 
-    /** Overridable for a test scheduler; live Bukkit objects are attached on the server thread. */
+    /** Residence metadata is attached on the global server thread, never on the IO worker. */
     protected void runOnServerThread(Runnable action) {
-        Bukkit.getScheduler().runTask(plugin, action);
+        TaskScheduler.create(plugin).runGlobal(action);
     }
 
     protected @Nullable ClaimedResidence resolveResidence(String name) {

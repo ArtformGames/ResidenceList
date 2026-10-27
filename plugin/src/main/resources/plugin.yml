@@ -9,6 +9,7 @@ authors:
   - CarmJos
 
 api-version: 1.16
+folia-supported: true
 
 depend:
   - Residence

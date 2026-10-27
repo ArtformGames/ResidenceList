@@ -17,8 +17,8 @@ import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
+import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -89,14 +89,18 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 @Override
                 public void onClick(Player player, ClickType clickType) {
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    previousGUI.openGUI(player);
+                    if (previousGUI != null) {
+                        previousGUI.openGUI(player);
+                    } else {
+                        player.closeInventory();
+                    }
                 }
             });
         }
-        Location teleportLocation = getResidenceData().getTeleportLocation(getViewer(), getViewer().getLocation());
+        ResidenceUtils.TeleportPreview preview = ResidenceUtils.teleportPreview(
+                getResidenceData(), getViewer(), getViewer().getLocation());
         setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT.prepare(
-                getResidenceData().getResidence().getMainArea().getWorldName(),
-                teleportLocation.getBlockX(), teleportLocation.getBlockY(), teleportLocation.getBlockZ()
+                preview == null ? new Object[]{"?", "?", "?", "?"} : preview.parameters()
         ).get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {

@@ -43,6 +43,23 @@ README LANGUAGES [ [English](README.md) | [**中文**](README_CN.md)  ]
 
 详细依赖列表可见  [Dependencies](https://github.com/ArtformGames/ResidenceList/network/dependencies) 。
 
+### Folia
+
+完整的 Folia 支持仍等待 EasyPlugin 更新：当前 1.5.14 的 GUI 注册表不是线程安全的，
+需要先在上游修复并升级依赖，再使用跨区域并发 GUI。ResidenceList 直接使用 EasyPlugin 的 GUI 类。
+
+ResidenceList 在 Folia 上分别使用全局、异步和玩家实体调度器，在 Spigot 和 Paper 上保留 Bukkit 调度器。
+聊天编辑在可用时使用 Paper 的 `AsyncChatEvent`。请安装兼容 Folia 的 Residence、CMILib 和所用的变量扩展；
+传送仍由 Residence 处理，保留其权限和传送规则。仓库内用于编译的 Residence 5.1.3.0
+仍会在传送安全检查中读取目的地区块，本分支未修复这项上游行为；跨区域传送需要使用正确处理
+Folia 安全检查的 Residence 版本进行验证。所有平台复用同一份传送物品配置，Folia 界面以 `≈`
+标记领地的近似中心坐标，不加载目的地区块，实际安全传送点可能不同。安装或更换插件时请完整重启服务器，
+Folia 上不支持热卸载或热重载插件；`/reslistadmin reload` 仅重载配置。
+
+在 Folia 实服验收时，请启用更新检查和统计，检查启动是否正常；让处于不同区域的玩家同时打开、翻页、
+排序列表，编辑昵称、描述和评论，使用 `#cancel` 取消编辑，选择图标，以及跨区域传送。
+同时检查编辑中退出、重载配置、停服保存及重启后的数据。请在 Spigot 上复测界面和聊天编辑以验证兼容路径。
+
 ## 指令
 
 ### 玩家指令

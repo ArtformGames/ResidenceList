@@ -1,9 +1,8 @@
 package com.artformgames.plugin.residencelist.utils;
 
 import cc.carm.lib.githubreleases4j.GithubReleases4J;
-import org.bukkit.Bukkit;
+import com.artformgames.plugin.residencelist.scheduler.TaskScheduler;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -33,8 +32,8 @@ public class GHUpdateChecker {
         return of(plugin).createRunner(plugin.getDescription().getVersion());
     }
 
-    public static @NotNull BukkitTask run(@NotNull Plugin plugin) {
-        return Bukkit.getScheduler().runTaskAsynchronously(plugin, runner(plugin));
+    public static void run(@NotNull Plugin plugin) {
+        TaskScheduler.create(plugin).runAsync(runner(plugin));
     }
 
     protected final @NotNull Logger logger;

@@ -42,6 +42,31 @@ List existing residence in server in a gui, and allow players to manage, telepor
 For development dependencies, please
 see  [Dependencies](https://github.com/ArtformGames/ResidenceList/network/dependencies) .
 
+### Folia
+
+Full Folia support is pending an EasyPlugin update: version 1.5.14 uses a non-thread-safe
+GUI registry. Fix that registry upstream and update the dependency before using concurrent
+GUIs across Folia regions. ResidenceList uses EasyPlugin's GUI class directly.
+
+ResidenceList uses Folia's global, asynchronous and player schedulers, while retaining
+the Bukkit scheduler on Spigot and Paper. Chat editing uses Paper's `AsyncChatEvent` when
+available. Install Folia-compatible versions of Residence, CMILib and any placeholder
+expansions you use; teleportation still goes through Residence's permission and teleport logic.
+The bundled compile-time dependency Residence 5.1.3.0 still reads destination blocks during
+teleport safety checks. This branch does not fix that upstream behavior; cross-region
+teleportation needs verification with a Residence build that handles those checks on Folia.
+All platforms reuse the same teleport item configuration. Folia menus mark the approximate
+residence center coordinates with `≈` without loading destination chunks; the actual safe
+teleport spot may differ.
+Use a full server restart when installing or replacing the plugin. Hot unloading/reloading
+plugins is not supported on Folia; `/reslistadmin reload` only reloads configuration.
+
+When testing a Folia server, check startup with update checking and metrics enabled, then
+use players in separate regions to open/page/sort lists, edit names/descriptions/comments,
+cancel with `#cancel`, select an icon and teleport to another region. Also check quitting
+during an edit, configuration reload, and saving data across a server restart. Repeat the
+GUI and editing checks on Spigot to verify the legacy path.
+
 ## Commands
 
 ### Player commands

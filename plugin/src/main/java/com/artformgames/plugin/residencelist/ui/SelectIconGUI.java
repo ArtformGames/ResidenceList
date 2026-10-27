@@ -41,11 +41,12 @@ public class SelectIconGUI extends GUI {
 
         event.setCancelled(true);
 
-        ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+        ItemStack currentItem = event.getCurrentItem();
+        if (currentItem == null || currentItem.getType() == Material.AIR) return;
+        ItemStack clickedItem = currentItem.clone();
 
         player.closeInventory();
-        Main.getInstance().getScheduler().run(() -> callback.accept(player, clickedItem));
+        Main.getInstance().getTaskScheduler().runForPlayer(player, () -> callback.accept(player, clickedItem));
     }
 
     public interface CONFIG extends Configuration {

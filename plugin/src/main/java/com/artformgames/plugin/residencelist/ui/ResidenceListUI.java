@@ -201,10 +201,12 @@ public class ResidenceListUI extends AutoPagedGUI {
                     }
                 } else if (type.isRightClick()) { // Teleport to residence (If allowed)
                     if (!data.canTeleport(viewer)) return;
-                    Location target = data.getTeleportLocation(viewer);
-                    if (target == null) {
-                        PluginMessages.TELEPORT.NO_LOCATION.sendTo(clicker, data.getDisplayName());
-                        return;
+                    if (!Main.getInstance().getTaskScheduler().isFolia()) {
+                        Location target = data.getTeleportLocation(viewer);
+                        if (target == null) {
+                            PluginMessages.TELEPORT.NO_LOCATION.sendTo(clicker, data.getDisplayName());
+                            return;
+                        }
                     }
                     data.getResidence().tpToResidence(clicker, clicker, clicker.hasPermission("residence.admin"));
                     PluginMessages.TELEPORT.SOUND.playTo(clicker);

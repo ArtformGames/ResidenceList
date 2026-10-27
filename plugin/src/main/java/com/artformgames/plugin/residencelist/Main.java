@@ -12,6 +12,7 @@ import com.artformgames.plugin.residencelist.hooker.PluginExpansion;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.listener.ResidenceListener;
 import com.artformgames.plugin.residencelist.listener.UserListener;
+import com.artformgames.plugin.residencelist.scheduler.TaskScheduler;
 import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.artformgames.plugin.residencelist.storage.sql.MySQLStorage;
 import com.artformgames.plugin.residencelist.storage.yaml.YAMLStorage;
@@ -36,6 +37,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
     protected MineConfiguration configuration;
     protected DataStorage<?, ?> storage;
+    private TaskScheduler taskScheduler;
 
     @Override
     protected void load() {
@@ -47,6 +49,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
     @Override
     protected boolean initialize() {
+        this.taskScheduler = TaskScheduler.create(this);
         if (this.storage == null) {
             log("Initialize data storage..."); // Supporting custom storages.
             String type = PluginConfig.STORAGE.TYPE.getNotNull().toUpperCase(Locale.ROOT);
@@ -80,8 +83,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
                         Bukkit.getPluginManager().disablePlugin(this);
                     }
                 };
-                if (Bukkit.isPrimaryThread()) complete.run();
-                else getScheduler().run(complete);
+                getTaskScheduler().runGlobal(complete);
             });
         } catch (Exception exception) {
             error("Could not start data storage: " + exception.getMessage());
@@ -96,6 +98,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         log("Register listeners...");
         GUI.initialize(this);
         registerListener(new EditHandler());
+        registerListener(EditHandler.chatListener());
         registerListener(new ResidenceListener());
         UserListener users = new UserListener();
         registerListener(users);
@@ -119,7 +122,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
         if (PluginConfig.CHECK_UPDATE.getNotNull()) {
             log("Start to check the plugin versions...");
-            getScheduler().runAsync(GHUpdateChecker.runner(this));
+            getTaskScheduler().runAsync(GHUpdateChecker.runner(this));
         } else {
             log("Version checker is disabled, skipped.");
         }
@@ -128,7 +131,15 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
     @Override
     protected void shutdown() {
-        GUI.closeAll();
+        EditHandler.clear();
+        if (taskScheduler != null && taskScheduler.isFolia()) {
+            // Region tick threads have already stopped during Folia shutdown. The server
+            // closes player inventories; do not touch them from the global region here.
+            GUI.getOpenedGUIs().clear();
+        } else {
+            GUI.closeAll();
+        }
+        if (taskScheduler != null) taskScheduler.cancelTasks();
 
         log("Saving all data to storage...");
         if (this.storage != null) this.storage.shutdown();
@@ -142,6 +153,10 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
     public MineConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public TaskScheduler getTaskScheduler() {
+        return taskScheduler;
     }
 
     public static void info(String... messages) {
@@ -162,7 +177,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
     @Override
     public void openGUI(@NotNull Player player, @Nullable String owner) {
-        ResidenceListUI.open(player, owner);
+        getTaskScheduler().runForPlayer(player, () -> ResidenceListUI.open(player, owner));
     }
 
     @NotNull
